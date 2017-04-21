@@ -1,0 +1,64 @@
+name: xPTradingCards
+main: com.xpgaming.tradingcards.TradingCards
+version: 1
+softdepend: [Towny, Vault]
+
+commands:
+   xptc:
+      description: All commands.
+      usage: /xptc
+      permission: xptc.xptc
+      permission-message: You don't have permission to do this!
+
+permissions:
+    xptc.xptc:
+        description: All commands.
+        default: true
+    xptc.reload:
+        description: Reload.
+        default: op
+    xptc.givecard:
+        description: Give a specific card.
+        default: op
+    xptc.giveshinycard:
+        description: Give a specific shiny card.
+        default: op
+    xptc.giverandomcard:
+        description: Give a random card.
+        default: op
+    xptc.giveaway:
+        description: Give away cards.
+        default: op
+    xptc.create:
+        description: Create a card.
+        default: op
+    xptc.giveboosterpack:
+        description: Give a booster pack.
+        default: op
+    xptc.decks.*:
+        description: Deck permissions.
+        default: op
+    xptc.getdeck:
+        description: Get a deck.
+        default: true
+    xptc.list:
+        description: List all cards.
+        default: true
+    xptc.buy:
+        description: Buy cards or packs.
+        default: true
+    xptc.sell:
+        description: Sell the card you are holding.
+        default: true
+    xptc.worth:
+        description: Get the value of the card.
+        default: true
+    xptc.toggle:
+        description: Toggle cards.
+        default: true
+    xptc.credits:
+        description: Shows credits.
+        default: true
+    xptc.listpacks:
+        description: Lists all booster packs.
+        default: true
