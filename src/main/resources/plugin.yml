@@ -1,64 +1,64 @@
-name: xPTradingCards
-main: com.xpgaming.tradingcards.TradingCards
-version: 1
-softdepend: [Towny, Vault]
+name: FWTradingCards
+main: it.forgottenworld.tradingcards.TradingCards
+version: "1.0"
+softdepend: [Vault]
 
 commands:
-   xptc:
+   fwtc:
       description: All commands.
-      usage: /xptc
-      permission: xptc.xptc
+      usage: /fwtc
+      permission: fwtc.fwtc
       permission-message: You don't have permission to do this!
 
 permissions:
-    xptc.xptc:
+    fwtc.fwtc:
         description: All commands.
         default: true
-    xptc.reload:
+    fwtc.reload:
         description: Reload.
         default: op
-    xptc.givecard:
+    fwtc.givecard:
         description: Give a specific card.
         default: op
-    xptc.giveshinycard:
+    fwtc.giveshinycard:
         description: Give a specific shiny card.
         default: op
-    xptc.giverandomcard:
+    fwtc.giverandomcard:
         description: Give a random card.
         default: op
-    xptc.giveaway:
+    fwtc.giveaway:
         description: Give away cards.
         default: op
-    xptc.create:
+    fwtc.create:
         description: Create a card.
         default: op
-    xptc.giveboosterpack:
+    fwtc.giveboosterpack:
         description: Give a booster pack.
         default: op
-    xptc.decks.*:
+    fwtc.decks.*:
         description: Deck permissions.
         default: op
-    xptc.getdeck:
+    fwtc.getdeck:
         description: Get a deck.
         default: true
-    xptc.list:
+    fwtc.list:
         description: List all cards.
         default: true
-    xptc.buy:
+    fwtc.buy:
         description: Buy cards or packs.
         default: true
-    xptc.sell:
+    fwtc.sell:
         description: Sell the card you are holding.
         default: true
-    xptc.worth:
+    fwtc.worth:
         description: Get the value of the card.
         default: true
-    xptc.toggle:
+    fwtc.toggle:
         description: Toggle cards.
         default: true
-    xptc.credits:
+    fwtc.credits:
         description: Shows credits.
         default: true
-    xptc.listpacks:
+    fwtc.listpacks:
         description: Lists all booster packs.
         default: true
