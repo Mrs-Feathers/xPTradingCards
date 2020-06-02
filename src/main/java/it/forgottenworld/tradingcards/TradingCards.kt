@@ -35,10 +35,10 @@ import java.util.*
 import kotlin.math.max
 
 class TradingCards : JavaPlugin(), Listener, CommandExecutor {
-    private var hostileMobs: List<EntityType> = listOf(EntityType.SPIDER, EntityType.ZOMBIE, EntityType.SKELETON, EntityType.CREEPER, EntityType.BLAZE, EntityType.SILVERFISH, EntityType.GHAST, EntityType.SLIME, EntityType.GUARDIAN, EntityType.MAGMA_CUBE, EntityType.WITCH, EntityType.ENDERMITE)
-    private var neutralMobs: List<EntityType> = listOf(EntityType.ENDERMAN, EntityType.PIG_ZOMBIE, EntityType.WOLF, EntityType.SNOWMAN, EntityType.IRON_GOLEM)
-    private var passiveMobs: List<EntityType> = listOf(EntityType.CHICKEN, EntityType.COW, EntityType.SQUID, EntityType.SHEEP, EntityType.PIG, EntityType.RABBIT, EntityType.VILLAGER, EntityType.BAT, EntityType.HORSE)
-    private var bossMobs: List<EntityType> = listOf(EntityType.ENDER_DRAGON, EntityType.WITHER)
+    private var hostileMobs: Set<EntityType> = setOf(EntityType.SPIDER, EntityType.ZOMBIE, EntityType.SKELETON, EntityType.CREEPER, EntityType.BLAZE, EntityType.SILVERFISH, EntityType.GHAST, EntityType.SLIME, EntityType.GUARDIAN, EntityType.MAGMA_CUBE, EntityType.WITCH, EntityType.ENDERMITE)
+    private var neutralMobs: Set<EntityType> = setOf(EntityType.ENDERMAN, EntityType.PIG_ZOMBIE, EntityType.WOLF, EntityType.SNOWMAN, EntityType.IRON_GOLEM)
+    private var passiveMobs: Set<EntityType> = setOf(EntityType.CHICKEN, EntityType.COW, EntityType.SQUID, EntityType.SHEEP, EntityType.PIG, EntityType.RABBIT, EntityType.VILLAGER, EntityType.BAT, EntityType.HORSE)
+    private var bossMobs: Set<EntityType> = setOf(EntityType.ENDER_DRAGON, EntityType.WITHER)
     private var hasVault = false
     private var deckData: FileConfiguration? = null
     private var deckDataFile: File? = null
@@ -64,30 +64,15 @@ class TradingCards : JavaPlugin(), Listener, CommandExecutor {
             reloadMessagesData()
             saveDefaultCardsFile()
             reloadCardsData()
-            /*if (getConfig().getBoolean("PluginSupport.Towny.Towny-Enabled"))
-      if (getServer().getPluginManager().getPlugin("Towny") != null) {
-        getServer().getPluginManager().registerEvents(new TownyListener(this), this);
-        System.out.println("[xPTradingCards] Towny successfully hooked!");
-      } else {
-        System.out.println("[xPTradingCards] Towny not found, hook unsuccessful!");
-      }*/if (config.getBoolean("PluginSupport.Vault.Vault-Enabled")) if (server.pluginManager.getPlugin("Vault") != null) {
+
+            if (config.getBoolean("PluginSupport.Vault.Vault-Enabled")) if (server.pluginManager.getPlugin("Vault") != null) {
                 setupEconomy()
                 println("[xPTradingCards] Vault hook successful!")
                 hasVault = true
             } else {
                 println("[xPTradingCards] Vault not found, hook unsuccessful!")
             }
-            /*if (getConfig().getBoolean("PluginSupport.MobArena.MobArena-Enabled"))
-      if (getServer().getPluginManager().getPlugin("MobArena") != null) {
-        PluginManager pm = getServer().getPluginManager();
-        //MobArena maPlugin = (MobArena)pm.getPlugin("MobArena");
-        //this.am = maPlugin.getArenaMaster();
-        //pm.registerEvents(new MobArenaListener(this), this);
-        //System.out.println("[xPTradingCards] Mob Arena hook successful!");
-        this.hasMobArena = false;
-      } else {
-        System.out.println("[xPTradingCards] Mob Arena not found, hook unsuccessful!");
-      }*/if (config.getBoolean("General.Schedule-Cards")) startTimer()
+            if (config.getBoolean("General.Schedule-Cards")) startTimer()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -180,9 +165,7 @@ class TradingCards : JavaPlugin(), Listener, CommandExecutor {
         }
         try {
             getDeckData()!!.save(deckDataFile!!)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        } catch (e: IOException) {}
     }
 
     private fun saveDefaultDeckFile() {
@@ -650,25 +633,6 @@ class TradingCards : JavaPlugin(), Listener, CommandExecutor {
             } else isOnList(p) && blacklistMode() == 'w'
             worldName = p!!.world.name
             worlds = config.getStringList("World-Blacklist")
-            /*if (this.hasMobArena) {
-        int i = 0;
-        if (getConfig().getBoolean("General.Debug-Mode")) System.out.println("[Cards] Mob Arena checks starting.");
-        if ((this.am.getArenas() != null) && (!this.am.getArenas().isEmpty())) {
-          if (getConfig().getBoolean("General.Debug-Mode")) System.out.println("[Cards] There is at least 1 arena!");
-          for (Arena arena : this.am.getArenas()) {
-            i++;
-            if (getConfig().getBoolean("General.Debug-Mode")) System.out.println("[Cards] For arena #" + i + "...");
-            if (getConfig().getBoolean("General.Debug-Mode")) System.out.println("[Cards] In arena?: " + arena.inArena(p));
-            if ((arena.inArena(p)) || (arena.inLobby(p))) {
-              if (getConfig().getBoolean("General.Debug-Mode")) System.out.println("[Cards] Killer is in an arena/lobby, so let's mess with the drops.");
-              if (getConfig().getBoolean("PluginSupport.MobArena.Disable-In-Arena")) drop = false;
-              if (getConfig().getBoolean("General.Debug-Mode")) System.out.println("[Cards] Drops are now: " + drop);
-            }
-            else if (getConfig().getBoolean("General.Debug-Mode")) { System.out.println("[Cards] Killer is not in this arena!");
-            }
-          }
-        }
-      }*/
         }
         if (drop &&
                 !worlds.contains(worldName)) {
