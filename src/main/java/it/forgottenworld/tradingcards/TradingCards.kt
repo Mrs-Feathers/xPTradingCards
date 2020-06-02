@@ -500,8 +500,7 @@ class TradingCards : JavaPlugin(), Listener, CommandExecutor {
 
     private fun calculateRarity(e: EntityType, alwaysDrop: Boolean): String? {
         val shouldItDrop = r.nextInt(100) + 1
-        var bossRarity = 0
-        var type = ""
+        val type: String
         if (config.getBoolean("General.Debug-Mode")) println("[Cards] shouldItDrop Num: $shouldItDrop")
         when {
             isMobHostile(e) -> {
@@ -531,7 +530,6 @@ class TradingCards : JavaPlugin(), Listener, CommandExecutor {
             isMobBoss(e) -> {
                 if (!alwaysDrop) {
                     if (shouldItDrop > config.getInt("Chances.Boss-Chance")) return "None"
-                    if (config.getBoolean("Chances.Boss-Drop")) bossRarity = config.getInt("Chances.Boss-Drop-Rarity")
                 }
                 type = "Boss"
             }
@@ -550,7 +548,7 @@ class TradingCards : JavaPlugin(), Listener, CommandExecutor {
             rarityIndexes[i] = key
             i++
             if (config.getBoolean("General.Debug-Mode")) println("[Cards] $i, $key")
-            if (config.contains("Chances." + key + "." + StringUtils.capitalize(e.getName())) && mini == 0) {
+            if (config.contains("Chances." + key + "." + StringUtils.capitalize(e.name)) && mini == 0) {
                 if (config.getBoolean("General.Debug-Mode")) println("[Cards] Mini: $i")
                 mini = i
             }
@@ -564,7 +562,7 @@ class TradingCards : JavaPlugin(), Listener, CommandExecutor {
             while (i >= mini) {
                 i--
                 if (config.getBoolean("General.Debug-Mode")) println("[Cards] i: $i")
-                val chance = config.getInt("Chances." + rarityIndexes[i] + "." + StringUtils.capitalize(e.getName()), -1)
+                val chance = config.getInt("Chances." + rarityIndexes[i] + "." + StringUtils.capitalize(e.name), -1)
                 if (config.getBoolean("General.Debug-Mode")) println("[Cards] Chance: $chance")
                 if (config.getBoolean("General.Debug-Mode")) println("[Cards] Rarity: " + rarityIndexes[i])
                 if (chance > 0) {
