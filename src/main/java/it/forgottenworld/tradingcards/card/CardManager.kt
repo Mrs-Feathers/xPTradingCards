@@ -107,7 +107,7 @@ class CardManager() {
         return card
     }
 
-    private fun createCard(creator: Player, rarity: String, name: String, series: String, type: String, hasShiny: Boolean, info: String) {
+    fun createCard(creator: Player, rarity: String, name: String, series: String, type: String, hasShiny: Boolean, info: String) {
         if (!configManager.cardsConfig.config!!.contains("Cards.$rarity.$name")) {
             if (name.matches(Regex("^[a-zA-Z0-9-_]+$"))) {
                 val rarities = configManager.cardsConfig.config!!.getConfigurationSection("Cards")!!

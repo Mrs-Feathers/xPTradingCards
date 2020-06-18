@@ -1,8 +1,6 @@
 package it.forgottenworld.tradingcards.deck
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.util.Utils
 import it.forgottenworld.tradingcards.util.Utils.Companion.cMsg
-import it.forgottenworld.tradingcards.util.Utils.Companion.wrapString
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
@@ -20,7 +18,7 @@ class DeckManager {
     private val blankBoosterPack: ItemStack
         get() = ItemStack(Material.getMaterial(config.getString("General.BoosterPack-Material")!!)!!)
 
-    private fun createDeck(p: Player, num: Int): ItemStack {
+    fun createDeck(p: Player, num: Int): ItemStack {
         val deck = blankDeck
         val deckMeta = deck.itemMeta
         deckMeta!!.setDisplayName(cMsg(config.getString("General.Deck-Prefix") + p.name + "'s Deck #" + num))
@@ -30,7 +28,7 @@ class DeckManager {
         return deck
     }
 
-    private fun hasDeck(p: Player, num: Int): Boolean {
+    fun hasDeck(p: Player, num: Int): Boolean {
         for (i in p.inventory) {
             if (i != null &&
                     i.type == Material.valueOf(config.getString("General.Deck-Material")!!) &&
@@ -81,7 +79,7 @@ class DeckManager {
         p.openInventory(inv)
     }
 
-    private fun createBoosterPack(name: String): ItemStack {
+    fun createBoosterPack(name: String): ItemStack {
         val boosterPack = blankBoosterPack
         val numNormalCards = config.getInt("BoosterPacks.$name.NumNormalCards")
         val numSpecialCards = config.getInt("BoosterPacks.$name.NumSpecialCards")

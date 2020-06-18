@@ -20,7 +20,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
 import java.util.*
 
-class PlayerListener() : Listener {
+class PlayerListener : Listener {
 
     private val pluginConfig = TradingCards.configManager.pluginConfig.config!!
     private val cardManager = TradingCards.cardManager

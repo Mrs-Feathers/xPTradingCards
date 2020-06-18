@@ -1,5 +1,10 @@
 package it.forgottenworld.tradingcards.listeners
 
+import it.forgottenworld.tradingcards.TradingCards
+import it.forgottenworld.tradingcards.util.Utils.Companion.blacklistMode
+import it.forgottenworld.tradingcards.util.Utils.Companion.calculateRarity
+import it.forgottenworld.tradingcards.util.Utils.Companion.isMobBoss
+import it.forgottenworld.tradingcards.util.Utils.Companion.isOnList
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -11,6 +16,8 @@ class EntityListener : Listener {
 
     @EventHandler
     fun onEntityDeath(e: EntityDeathEvent) {
+        val config = TradingCards.configManager.pluginConfig.config!!
+        val cardManager = TradingCards.cardManager
         var drop = false
         var worldName = ""
         var worlds: List<String?> = ArrayList()
@@ -38,7 +45,7 @@ class EntityListener : Listener {
                 }
                 if (!cancelled) {
                     if (config.getBoolean("General.Debug-Mode")) println("[Cards] Successfully generated card.")
-                    if (generateCard(rare) != null) e.drops.add(generateCard(rare))
+                    if (cardManager.generateCard(rare) != null) e.drops.add(cardManager.generateCard(rare))
                 }
             }
         }
@@ -46,6 +53,7 @@ class EntityListener : Listener {
 
     @EventHandler
     fun onMobSpawn(e: CreatureSpawnEvent) {
+        val config = TradingCards.configManager.pluginConfig.config!!
         if (e.entity !is Player &&
                 e.spawnReason == CreatureSpawnEvent.SpawnReason.SPAWNER && config.getBoolean("General.Spawner-Block")) {
             e.entity.customName = config.getString("General.Spawner-Mob-Name")

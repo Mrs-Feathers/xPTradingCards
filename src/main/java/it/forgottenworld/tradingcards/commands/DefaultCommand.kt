@@ -1,6 +1,14 @@
 package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.TradingCards
+import it.forgottenworld.tradingcards.TradingCards.Companion.configManager
+import it.forgottenworld.tradingcards.util.Utils.Companion.addToList
+import it.forgottenworld.tradingcards.util.Utils.Companion.blacklistMode
+import it.forgottenworld.tradingcards.util.Utils.Companion.cMsg
+import it.forgottenworld.tradingcards.util.Utils.Companion.calculateRarity
+import it.forgottenworld.tradingcards.util.Utils.Companion.formatTitle
+import it.forgottenworld.tradingcards.util.Utils.Companion.isOnList
+import it.forgottenworld.tradingcards.util.Utils.Companion.removeFromList
 import org.apache.commons.lang3.StringUtils
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -11,70 +19,78 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
+import java.util.*
 
 class DefaultCommand : CommandExecutor {
 
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<String>): Boolean {
+        val configManager = configManager
+        val cardManager = TradingCards.cardManager
+        val deckManager = TradingCards.deckManager
+        val messagesConfig = configManager.messagesConfig.config!!
+        val cardsConfig = configManager.cardsConfig.config!!
+        val config = configManager.pluginConfig.config!!
+
         if (cmd.name.equals("fwtc", ignoreCase = true)) {
             if (args.isNotEmpty()) {
                 if (args[0].equals("reload", ignoreCase = true)) {
                     if (sender.hasPermission("fwtc.reload")) {
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.Reload")))
-                        reloadCustomConfig()
-                        if (config.getBoolean("General.Schedule-Cards")) startTimer()
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.Reload")))
+                        configManager.reloadAllConfigs()
+                        if (config.getBoolean("General.Schedule-Cards")) TradingCards.instance.task.startTimer()
                         return true
                     }
-                    sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                    sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                 } else if (args[0].equals("toggle", ignoreCase = true)) {
                     val p = sender as Player
                     if (isOnList(p) && blacklistMode() == 'b') {
                         removeFromList(p)
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.ToggleEnabled")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ToggleEnabled")))
                     } else if (isOnList(p) && blacklistMode() == 'w') {
                         removeFromList(p)
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.ToggleDisabled")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ToggleDisabled")))
                     } else if (!isOnList(p) && blacklistMode() == 'b') {
                         addToList(p)
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.ToggleDisabled")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ToggleDisabled")))
                     } else if (!isOnList(p) && blacklistMode() == 'w') {
                         addToList(p)
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.ToggleEnabled")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ToggleEnabled")))
                     }
                 } else if (args[0].equals("create", ignoreCase = true)) {
                     if (sender.hasPermission("fwtc.create")) {
                         val p = sender as Player
                         if (args.size < 8) {
-                            sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.CreateUsage")))
+                            sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.CreateUsage")))
                         } else {
                             val isShiny = args[5].equals("true", ignoreCase = true) || args[5].equals("yes", ignoreCase = true) || args[5].equals("y", ignoreCase = true)
-                            createCard(p, args[1].replace("_".toRegex(), " "), args[2], args[3].replace("_".toRegex(), " "), args[4].replace("_".toRegex(), " "), isShiny, args[6].replace("_".toRegex(), " "))
+                            cardManager.createCard(p, args[1].replace("_".toRegex(), " "), args[2], args[3].replace("_".toRegex(), " "), args[4].replace("_".toRegex(), " "), isShiny, args[6].replace("_".toRegex(), " "))
                         }
                     }
                 } else if (args[0].equals("givecard", ignoreCase = true)) {
                     if (sender.hasPermission("fwtc.givecard")) {
                         if (args.size > 2) {
                             val p = sender as Player
-                            if (getCardsData()!!.contains("Cards." + args[1].replace("_".toRegex(), " ") + "." + args[2])) p.inventory.addItem(getNormalCard(args[2], args[1].replace("_".toRegex(), " "), 1)) else {
-                                sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoCard")))
+                            if (cardsConfig.contains("Cards." + args[1].replace("_".toRegex(), " ") + "." + args[2])) p.inventory.addItem(cardManager.getNormalCard(args[2], args[1].replace("_".toRegex(), " "), 1)) else {
+                                sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoCard")))
                             }
                         } else {
-                            sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveCardUsage")))
+                            sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveCardUsage")))
                         }
                     } else {
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                     }
                 } else if (args[0].equals("giveshinycard", ignoreCase = true)) {
                     if (sender.hasPermission("fwtc.giveshinycard")) {
                         if (args.size > 2) {
                             val p = sender as Player
-                            if (getCardsData()!!.contains("Cards." + args[1].replace("_".toRegex(), " ") + "." + args[2])) p.inventory.addItem(createPlayerCard(args[2], args[1].replace("_".toRegex(), " "), 1, true)) else {
-                                sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoCard")))
+                            if (cardsConfig.contains("Cards." + args[1].replace("_".toRegex(), " ") + "." + args[2])) p.inventory.addItem(cardManager.createPlayerCard(args[2], args[1].replace("_".toRegex(), " "), 1, true)) else {
+                                sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoCard")))
                             }
                         } else {
-                            sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveCardUsage")))
+                            sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveCardUsage")))
                         }
                     } else {
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                     }
                 } else if (args[0].equals("giveboosterpack", ignoreCase = true)) {
                     if (sender.hasPermission("fwtc.giveboosterpack")) {
@@ -83,22 +99,22 @@ class DefaultCommand : CommandExecutor {
                                 if (Bukkit.getPlayer(args[1]) != null) {
                                     val p = Bukkit.getPlayer(args[1])
                                     if (p!!.inventory.firstEmpty() != -1) {
-                                        p.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.BoosterPackMsg")))
-                                        p.inventory.addItem(createBoosterPack(args[2]))
+                                        p.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.BoosterPackMsg")))
+                                        p.inventory.addItem(deckManager.createBoosterPack(args[2]))
                                     } else {
                                         val curWorld = p.world
                                         if (p.gameMode == GameMode.SURVIVAL) {
-                                            p.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.BoosterPackMsg")))
-                                            curWorld.dropItem(p.location, createBoosterPack(args[2]))
+                                            p.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.BoosterPackMsg")))
+                                            curWorld.dropItem(p.location, deckManager.createBoosterPack(args[2]))
                                         }
                                     }
                                 } else {
-                                    sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPlayer")))
+                                    sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPlayer")))
                                 }
-                            } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoBoosterPack")))
-                        } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveBoosterPackUsage")))
+                            } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoBoosterPack")))
+                        } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveBoosterPackUsage")))
                     } else {
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                     }
                 } else if (args[0].equals("getdeck", ignoreCase = true)) {
                     if (sender.hasPermission("fwtc.getdeck")) {
@@ -106,24 +122,24 @@ class DefaultCommand : CommandExecutor {
                             if (StringUtils.isNumeric(args[1])) {
                                 if (sender.hasPermission("fwtc.decks." + args[1])) {
                                     val p = sender as Player
-                                    if (!hasDeck(p, args[1].toInt())) {
+                                    if (!deckManager.hasDeck(p, args[1].toInt())) {
                                         if (p.inventory.firstEmpty() != -1) {
-                                            p.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveDeck")))
-                                            p.inventory.addItem(createDeck(p, args[1].toInt()))
+                                            p.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveDeck")))
+                                            p.inventory.addItem(deckManager.createDeck(p, args[1].toInt()))
                                         } else {
                                             val curWorld = p.world
                                             if (p.gameMode == GameMode.SURVIVAL) {
-                                                p.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveDeck")))
-                                                curWorld.dropItem(p.location, createDeck(p, args[1].toInt()))
+                                                p.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveDeck")))
+                                                curWorld.dropItem(p.location, deckManager.createDeck(p, args[1].toInt()))
                                             }
                                         }
-                                    } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.AlreadyHaveDeck")))
+                                    } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.AlreadyHaveDeck")))
                                 } else {
-                                    sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.MaxDecks")))
+                                    sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.MaxDecks")))
                                 }
-                            } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GetDeckUsage")))
-                        } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GetDeckUsage")))
-                    } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                            } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GetDeckUsage")))
+                        } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GetDeckUsage")))
+                    } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                 } else if (args[0].equals("giverandomcard", ignoreCase = true)) {
                     if (sender.hasPermission("fwtc.randomcard")) {
                         if (args.size > 2) {
@@ -133,36 +149,36 @@ class DefaultCommand : CommandExecutor {
                                     EntityType.valueOf(args[1].toUpperCase())
                                     val rare = calculateRarity(EntityType.valueOf(args[1].toUpperCase()), true)
                                     if (config.getBoolean("General.Debug-Mode")) println("[Cards] onCommand.rare: $rare")
-                                    sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveRandomCardMsg")!!.replace("%player%".toRegex(), p!!.name)))
+                                    sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveRandomCardMsg")!!.replace("%player%".toRegex(), p!!.name)))
                                     if (p.inventory.firstEmpty() != -1) {
-                                        p.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveRandomCard")))
-                                        if (generateCard(rare) != null) p.inventory.addItem(generateCard(rare))
+                                        p.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveRandomCard")))
+                                        if (cardManager.generateCard(rare) != null) p.inventory.addItem(cardManager.generateCard(rare))
                                     } else {
                                         val curWorld = p.world
                                         if (p.gameMode == GameMode.SURVIVAL) {
-                                            p.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveRandomCard")))
-                                            if (generateCard(rare) != null) curWorld.dropItem(p.location, generateCard(rare)!!)
+                                            p.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveRandomCard")))
+                                            if (cardManager.generateCard(rare) != null) curWorld.dropItem(p.location, cardManager.generateCard(rare)!!)
                                         }
                                     }
                                 } catch (e: IllegalArgumentException) {
-                                    sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoEntity")))
+                                    sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoEntity")))
                                 }
                             } else {
-                                sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPlayer")))
+                                sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPlayer")))
                             }
-                        } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveRandomCardUsage")))
+                        } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveRandomCardUsage")))
                     } else {
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                     }
                 } else if (args[0].equals("list", ignoreCase = true)) {
                     if (sender.hasPermission("fwtc.list")) {
-                        val cards = getCardsData()!!.getConfigurationSection("Cards")!!
+                        val cards = cardsConfig.getConfigurationSection("Cards")!!
                         val cardKeys = cards.getKeys(false)
                         var msg = ""
                         var i = 0
                         var finalMsg = ""
                         for (key in cardKeys) {
-                            val cardsWithKey = getCardsData()!!.getConfigurationSection("Cards.$key")!!
+                            val cardsWithKey = cardsConfig.getConfigurationSection("Cards.$key")!!
                             val keyKeys = cardsWithKey.getKeys(false)
                             for (key2 in keyKeys) {
                                 if (i > 41) {
@@ -178,7 +194,7 @@ class DefaultCommand : CommandExecutor {
                             i = 0
                         }
                     } else {
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                     }
                 } else {
                     var hasExtra: Boolean
@@ -200,12 +216,12 @@ class DefaultCommand : CommandExecutor {
                                 hasExtra = false
                             }
                         } else {
-                            sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                            sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                         }
                     } else if (args[0].equals("giveaway", ignoreCase = true)) {
                         if (sender.hasPermission("fwtc.giveaway")) {
                             if (args.size > 1) {
-                                val rarities = getCardsData()!!.getConfigurationSection("Cards")!!
+                                val rarities = cardsConfig.getConfigurationSection("Cards")!!
                                 val rarityKeys = rarities.getKeys(false)
                                 var keyToUse = ""
                                 for (key in rarityKeys) {
@@ -214,11 +230,11 @@ class DefaultCommand : CommandExecutor {
                                     }
                                 }
                                 if (keyToUse != "") {
-                                    Bukkit.broadcastMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.Giveaway")!!.replace("%player%".toRegex(), sender.name).replace("%rarity%".toRegex(), keyToUse)))
+                                    Bukkit.broadcastMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.Giveaway")!!.replace("%player%".toRegex(), sender.name).replace("%rarity%".toRegex(), keyToUse)))
                                     for (p in Bukkit.getOnlinePlayers()) {
-                                        val cards = getCardsData()!!.getConfigurationSection("Cards.$keyToUse")!!
+                                        val cards = cardsConfig.getConfigurationSection("Cards.$keyToUse")!!
                                         val cardKeys = cards.getKeys(false)
-                                        val rIndex = r.nextInt(cardKeys.size)
+                                        val rIndex = Random().nextInt(cardKeys.size)
                                         var i = 0
                                         var cardName = ""
                                         for (theCardName in cardKeys) {
@@ -229,26 +245,26 @@ class DefaultCommand : CommandExecutor {
                                             i++
                                         }
                                         if (p.inventory.firstEmpty() != -1) {
-                                            p.inventory.addItem(createPlayerCard(cardName, keyToUse, 1, false))
+                                            p.inventory.addItem(cardManager.createPlayerCard(cardName, keyToUse, 1, false))
                                         } else {
                                             val curWorld = p.world
                                             if (p.gameMode == GameMode.SURVIVAL) {
-                                                curWorld.dropItem(p.location, createPlayerCard(cardName, keyToUse, 1, false))
+                                                curWorld.dropItem(p.location, cardManager.createPlayerCard(cardName, keyToUse, 1, false))
                                             }
                                         }
                                     }
                                 } else {
-                                    sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoRarity")))
+                                    sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoRarity")))
                                 }
                             } else {
-                                sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.GiveawayUsage")))
+                                sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.GiveawayUsage")))
                             }
                         } else {
-                            sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                            sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                         }
                     } else if (args[0].equals("worth", ignoreCase = true)) {
                         if (sender.hasPermission("fwtc.worth")) {
-                            if (hasVault) {
+                            if (TradingCards.instance.hasVault) {
                                 val p = sender as Player
                                 if (p.inventory.getItem(p.inventory.heldItemSlot)?.type == Material.valueOf(config.getString("General.Card-Material")!!)) {
                                     val itemInHand = p.inventory.getItem(p.inventory.heldItemSlot)
@@ -265,22 +281,22 @@ class DefaultCommand : CommandExecutor {
                                     if (config.getBoolean("General.Debug-Mode")) println(rarity)
                                     var canBuy = false
                                     var buyPrice = 0.0
-                                    if (getCardsData()!!.contains("Cards.$rarity.$cardName.Buy-Price")) {
-                                        buyPrice = getCardsData()!!.getDouble("Cards.$rarity.$cardName.Buy-Price")
+                                    if (cardsConfig.contains("Cards.$rarity.$cardName.Buy-Price")) {
+                                        buyPrice = cardsConfig.getDouble("Cards.$rarity.$cardName.Buy-Price")
                                         if (buyPrice > 0.0) canBuy = true
                                     }
                                     if (canBuy) {
-                                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.CanBuy")!!.replace("%buyAmount%".toRegex(), buyPrice.toString())))
+                                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.CanBuy")!!.replace("%buyAmount%".toRegex(), buyPrice.toString())))
                                     } else {
-                                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.CanNotBuy")))
+                                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.CanNotBuy")))
                                     }
                                 } else {
-                                    sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NotACard")))
+                                    sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NotACard")))
                                 }
                             } else {
-                                sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoVault")))
+                                sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoVault")))
                             }
-                        } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                        } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                     } else if (args[0].equals("credits", ignoreCase = true)) {
                         sender.sendMessage(cMsg(formatTitle("Credits and Special Thanks")))
                         sender.sendMessage(cMsg("&7[&aDeveloper&7] &aLukas Xenoyia Gentle"))
@@ -288,7 +304,7 @@ class DefaultCommand : CommandExecutor {
                         sender.sendMessage(cMsg("&7[&eSpecial Thanks&7] XpanD, IrChaos, xtechgamer735, PTsandro, FlyingSquidwolf, iXRaZoRXi, iToxy, TowelieDOH, Miku_Snow, NOBUTSS, doitliketyler, Celebrimbor90, Magz, GypsySix, bumbble, iFosadrink_2, Sunique, TheRealGSD, Zenko, Berkth, TubeCraftXXL, Cra2ytig3r, marcosds13, ericbarbwire, Bonzo"))
                     } else if (args[0].equals("buy", ignoreCase = true)) {
                         if (sender.hasPermission("fwtc.buy")) {
-                            if (hasVault) {
+                            if (TradingCards.instance.hasVault) {
                                 val p = sender as Player
                                 if (args.size > 1) {
                                     if (args[1].equals("pack", ignoreCase = true)) {
@@ -309,30 +325,30 @@ class DefaultCommand : CommandExecutor {
                                                             TradingCards.econ!!.withdrawPlayer(p, buyPrice)
                                                         }
                                                         if (p.inventory.firstEmpty() != -1) {
-                                                            p.inventory.addItem(createBoosterPack(args[2]))
+                                                            p.inventory.addItem(deckManager.createBoosterPack(args[2]))
                                                         } else {
                                                             val curWorld = p.world
                                                             if (p.gameMode == GameMode.SURVIVAL) {
-                                                                curWorld.dropItem(p.location, createBoosterPack(args[2]))
+                                                                curWorld.dropItem(p.location, deckManager.createBoosterPack(args[2]))
                                                             }
                                                         }
-                                                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.BoughtCard")!!.replace("%amount%".toRegex(), buyPrice.toString())))
+                                                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.BoughtCard")!!.replace("%amount%".toRegex(), buyPrice.toString())))
                                                     } else {
-                                                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NotEnoughMoney")))
+                                                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NotEnoughMoney")))
                                                     }
-                                                } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.CannotBeBought")))
+                                                } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.CannotBeBought")))
                                             } else {
-                                                sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.PackDoesntExist")))
+                                                sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.PackDoesntExist")))
                                             }
-                                        } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.ChoosePack")))
+                                        } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ChoosePack")))
                                     } else if (args[1].equals("card", ignoreCase = true)) {
                                         if (args.size > 2) {
                                             if (args.size > 3) {
-                                                if (getCardsData()!!.contains("Cards." + args[2] + "." + args[3])) {
+                                                if (cardsConfig.contains("Cards." + args[2] + "." + args[3])) {
                                                     var buyPrice = 0.0
                                                     var canBuy = false
-                                                    if (getCardsData()!!.contains("Cards." + args[2] + "." + args[3] + ".Buy-Price")) {
-                                                        buyPrice = getCardsData()!!.getDouble("Cards." + args[2] + "." + args[3] + ".Buy-Price")
+                                                    if (cardsConfig.contains("Cards." + args[2] + "." + args[3] + ".Buy-Price")) {
+                                                        buyPrice = cardsConfig.getDouble("Cards." + args[2] + "." + args[3] + ".Buy-Price")
                                                         if (buyPrice > 0.0) canBuy = true
                                                     }
                                                     if (canBuy) {
@@ -344,87 +360,87 @@ class DefaultCommand : CommandExecutor {
                                                                 TradingCards.econ!!.withdrawPlayer(p, buyPrice)
                                                             }
                                                             if (p.inventory.firstEmpty() != -1) {
-                                                                p.inventory.addItem(createPlayerCard(args[3], args[2], 1, false))
+                                                                p.inventory.addItem(cardManager.createPlayerCard(args[3], args[2], 1, false))
                                                             } else {
                                                                 val curWorld = p.world
                                                                 if (p.gameMode == GameMode.SURVIVAL) {
-                                                                    curWorld.dropItem(p.location, createPlayerCard(args[3], args[2], 1, false))
+                                                                    curWorld.dropItem(p.location, cardManager.createPlayerCard(args[3], args[2], 1, false))
                                                                 }
                                                             }
-                                                            sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.BoughtCard")!!.replace("%amount%".toRegex(), buyPrice.toString())))
+                                                            sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.BoughtCard")!!.replace("%amount%".toRegex(), buyPrice.toString())))
                                                         } else {
-                                                            sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NotEnoughMoney")))
+                                                            sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NotEnoughMoney")))
                                                         }
-                                                    } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.CannotBeBought")))
+                                                    } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.CannotBeBought")))
                                                 } else {
-                                                    sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.CardDoesntExist")))
+                                                    sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.CardDoesntExist")))
                                                 }
-                                            } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.ChooseCard")))
-                                        } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.ChooseRarity")))
-                                    } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.BuyUsage")))
-                                } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.BuyUsage")))
+                                            } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ChooseCard")))
+                                        } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ChooseRarity")))
+                                    } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.BuyUsage")))
+                                } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.BuyUsage")))
                             } else {
-                                sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoVault")))
+                                sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoVault")))
                             }
-                        } else sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoPerms")))
+                        } else sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoPerms")))
                     } else {
-                        sender.sendMessage(cMsg(getMessagesData()!!.getString("Messages.Prefix") + " " + getMessagesData()!!.getString("Messages.NoCmd")))
+                        sender.sendMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.NoCmd")))
                     }
                 }
             } else {
                 val showUsage = config.getBoolean("General.Show-Command-Usage", true)
                 sender.sendMessage(cMsg(formatTitle(config.getString("General.Server-Name") + " Trading Cards")))
                 if (sender.hasPermission("fwtc.reload")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.ReloadUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.ReloadHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.ReloadUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.ReloadHelp")))
                 }
                 if (sender.hasPermission("fwtc.givecard")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.GiveCardUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.GiveCardHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.GiveCardUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.GiveCardHelp")))
                 }
                 if (sender.hasPermission("fwtc.giveshinycard")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.GiveShinyCardUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.GiveShinyCardHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.GiveShinyCardUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.GiveShinyCardHelp")))
                 }
                 if (sender.hasPermission("fwtc.giverandomcard")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.GiveRandomCardUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.GiveRandomCardHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.GiveRandomCardUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.GiveRandomCardHelp")))
                 }
                 if (sender.hasPermission("fwtc.giveboosterpack")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.GiveBoosterPackUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.GiveBoosterPackHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.GiveBoosterPackUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.GiveBoosterPackHelp")))
                 }
                 if (sender.hasPermission("fwtc.giveaway")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.GiveawayUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.GiveawayHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.GiveawayUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.GiveawayHelp")))
                 }
                 if (sender.hasPermission("fwtc.getdeck")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.GetDeckUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.GetDeckHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.GetDeckUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.GetDeckHelp")))
                 }
                 if (sender.hasPermission("fwtc.list")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.ListUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.ListHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.ListUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.ListHelp")))
                 }
                 if (sender.hasPermission("fwtc.listpacks")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.ListPacksUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.ListPacksHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.ListPacksUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.ListPacksHelp")))
                 }
                 if (sender.hasPermission("fwtc.toggle")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.ToggleUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.ToggleHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.ToggleUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.ToggleHelp")))
                 }
                 if (sender.hasPermission("fwtc.create")) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.CreateUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.CreateHelp")))
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.CreateUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.CreateHelp")))
                 }
-                if (sender.hasPermission("fwtc.buy") && hasVault) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.BuyUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.BuyHelp")))
+                if (sender.hasPermission("fwtc.buy") && TradingCards.instance.hasVault) {
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.BuyUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.BuyHelp")))
                 }
-                if (sender.hasPermission("fwtc.worth") && hasVault) {
-                    sender.sendMessage(cMsg("&7> &3" + getMessagesData()!!.getString("Messages.WorthUsage")))
-                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + getMessagesData()!!.getString("Messages.WorthHelp")))
+                if (sender.hasPermission("fwtc.worth") && TradingCards.instance.hasVault) {
+                    sender.sendMessage(cMsg("&7> &3" + messagesConfig.getString("Messages.WorthUsage")))
+                    if (showUsage) sender.sendMessage(cMsg("   &7- &f&o" + messagesConfig.getString("Messages.WorthHelp")))
                 }
                 return true
             }

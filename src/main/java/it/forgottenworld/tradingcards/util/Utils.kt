@@ -5,7 +5,9 @@ import org.apache.commons.lang.WordUtils
 import org.apache.commons.lang3.StringUtils
 import org.bukkit.ChatColor
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
 import java.util.*
+import kotlin.math.max
 
 class Utils {
     companion object {
@@ -14,19 +16,19 @@ class Utils {
         private var passiveMobs: Set<EntityType> = setOf(EntityType.CHICKEN, EntityType.COW, EntityType.SQUID, EntityType.SHEEP, EntityType.PIG, EntityType.RABBIT, EntityType.VILLAGER, EntityType.BAT, EntityType.HORSE)
         private var bossMobs: Set<EntityType> = setOf(EntityType.ENDER_DRAGON, EntityType.WITHER)
 
-        private fun isMobHostile(e: EntityType): Boolean {
+        fun isMobHostile(e: EntityType): Boolean {
             return hostileMobs.contains(e)
         }
 
-        private fun isMobNeutral(e: EntityType): Boolean {
+        fun isMobNeutral(e: EntityType): Boolean {
             return neutralMobs.contains(e)
         }
 
-        private fun isMobPassive(e: EntityType): Boolean {
+        fun isMobPassive(e: EntityType): Boolean {
             return passiveMobs.contains(e)
         }
 
-        private fun isMobBoss(e: EntityType): Boolean {
+        fun isMobBoss(e: EntityType): Boolean {
             return bossMobs.contains(e)
         }
 
@@ -49,7 +51,7 @@ class Utils {
             return finalArray
         }
 
-        private fun calculateRarity(e: EntityType, alwaysDrop: Boolean): String? {
+        fun calculateRarity(e: EntityType, alwaysDrop: Boolean): String? {
             val config = TradingCards.configManager.pluginConfig.config!!
             val shouldItDrop = Random().nextInt(100) + 1
             val type: String
@@ -142,6 +144,44 @@ class Utils {
                 }
             }
             return "None"
+        }
+
+        fun formatTitle(title: String): String {
+            val line = "&7[&foOo&7]&f____________________________________________________&7[&foOo&7]&f"
+            val pivot = line.length / 2
+            val center = "&7.< &3$title&7 >.&f"
+            var out: String = line.substring(0, max(0, pivot - center.length / 2))
+            out = out + center + line.substring(pivot + center.length / 2)
+            return out
+        }
+
+        fun isOnList(p: Player?): Boolean {
+            val config = TradingCards.configManager.pluginConfig.config!!
+            val playersOnList = config.getStringList("Blacklist.Players")
+            return playersOnList.contains(p!!.name)
+        }
+
+        fun addToList(p: Player) {
+            val config = TradingCards.configManager.pluginConfig.config!!
+            val playersOnList = config.getStringList("Blacklist.Players")
+            playersOnList.add(p.name)
+            config["Blacklist.Players"] = null
+            config["Blacklist.Players"] = playersOnList
+            TradingCards.configManager.pluginConfig.save()
+        }
+
+        fun removeFromList(p: Player) {
+            val config = TradingCards.configManager.pluginConfig.config!!
+            val playersOnList = config.getStringList("Blacklist.Players")
+            playersOnList.remove(p.name)
+            config["Blacklist.Players"] = null
+            config["Blacklist.Players"] = playersOnList
+            TradingCards.configManager.pluginConfig.save()
+        }
+
+        fun blacklistMode(): Char {
+            val config = TradingCards.configManager.pluginConfig.config!!
+            return if (config.getBoolean("Blacklist.Whitelist-Mode")) 'w' else 'b'
         }
     }
 }
