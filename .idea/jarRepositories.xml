@@ -2,19 +2,24 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
-      <option name="id" value="vault-repo" />
-      <option name="name" value="vault-repo" />
-      <option name="url" value="http://nexus.theyeticave.net/content/repositories/pub_releases" />
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven-central" />
+      <option name="name" value="maven-central" />
+      <option name="url" value="https://repo.maven.apache.org/maven2/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jitpack.io" />
+      <option name="name" value="jitpack.io" />
+      <option name="url" value="https://jitpack.io" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="spigot-repo" />
       <option name="name" value="spigot-repo" />
       <option name="url" value="https://hub.spigotmc.org/nexus/content/repositories/snapshots/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="central" />
-      <option name="name" value="Central Repository" />
-      <option name="url" value="https://repo.maven.apache.org/maven2" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />
@@ -27,24 +32,19 @@
       <option name="url" value="https://mvnrepository.com/" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="jitpack.io" />
-      <option name="name" value="jitpack.io" />
-      <option name="url" value="https://jitpack.io" />
+      <option name="id" value="jboss.community" />
+      <option name="name" value="JBoss Community repository" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="vault-repo" />
+      <option name="name" value="vault-repo" />
+      <option name="url" value="http://nexus.theyeticave.net/content/repositories/pub_releases" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="jabylon" />
       <option name="name" value="jabylon" />
       <option name="url" value="http://www.jabylon.org/maven/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="maven-central" />
-      <option name="name" value="maven-central" />
-      <option name="url" value="https://repo.maven.apache.org/maven2/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="jboss.community" />
-      <option name="name" value="JBoss Community repository" />
-      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
     </remote-repository>
   </component>
 </project>

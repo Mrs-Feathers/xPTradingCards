@@ -1,4 +1,5 @@
 package it.forgottenworld.tradingcards.deck
+
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.util.Utils.Companion.cMsg
 import org.bukkit.Bukkit
@@ -7,16 +8,25 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.tags.ItemTagType
 
 class DeckManager {
 
     val config = TradingCards.configManager.pluginConfig.config!!
 
     private val blankDeck: ItemStack
-        get() = ItemStack(Material.getMaterial(config.getString("General.Deck-Material")!!)!!)
+        get() {
+            val itemStack = ItemStack(Material.getMaterial(config.getString("General.Deck-Material")!!)!!)
+            itemStack.itemMeta?.customTagContainer?.setCustomTag(TradingCards.nameSpacedKey, ItemTagType.BYTE, 1)
+            return itemStack
+        }
 
     private val blankBoosterPack: ItemStack
-        get() = ItemStack(Material.getMaterial(config.getString("General.BoosterPack-Material")!!)!!)
+        get() {
+            val itemStack = ItemStack(Material.getMaterial(config.getString("General.BoosterPack-Material")!!)!!)
+            itemStack.itemMeta?.customTagContainer?.setCustomTag(TradingCards.nameSpacedKey, ItemTagType.BYTE,1)
+            return itemStack
+        }
 
     fun createDeck(p: Player, num: Int): ItemStack {
         val deck = blankDeck

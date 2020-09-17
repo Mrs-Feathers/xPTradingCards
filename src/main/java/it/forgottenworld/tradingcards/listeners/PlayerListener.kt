@@ -14,10 +14,12 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.inventory.CraftItemEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.tags.ItemTagType
 import java.util.*
 
 class PlayerListener : Listener {
@@ -223,5 +225,17 @@ class PlayerListener : Listener {
                 configManager.reloadCardsConfig()
             }
         }
+    }
+
+    @EventHandler
+    fun onPlayerCraft(e: CraftItemEvent){
+        val items = e.inventory.contents
+        items.forEach { item ->
+            val customTagContainer = item.itemMeta?.customTagContainer
+            if(customTagContainer != null && customTagContainer.hasCustomTag(TradingCards.nameSpacedKey, ItemTagType.BYTE)){
+                e.isCancelled = true
+                return
+            }
+         }
     }
 }

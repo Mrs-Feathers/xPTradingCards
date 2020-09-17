@@ -9,6 +9,7 @@ import it.forgottenworld.tradingcards.listeners.PlayerListener
 import it.forgottenworld.tradingcards.task.Task
 import net.milkbowl.vault.chat.Chat
 import net.milkbowl.vault.economy.Economy
+import org.bukkit.NamespacedKey
 import org.bukkit.permissions.Permission
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -21,6 +22,7 @@ class TradingCards : JavaPlugin() {
     override fun onEnable() {
         try {
             instance = this
+            nameSpacedKey = NamespacedKey(this,"uncraftable")
             server.pluginManager.addPermission(permRarities)
             server.pluginManager.registerEvents(PlayerListener(), this)
             server.pluginManager.registerEvents(EntityListener(), this)
@@ -70,5 +72,6 @@ class TradingCards : JavaPlugin() {
         lateinit var instance: TradingCards
         lateinit var cardManager: CardManager
         lateinit var deckManager: DeckManager
+        lateinit var nameSpacedKey: NamespacedKey
     }
 }

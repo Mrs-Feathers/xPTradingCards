@@ -11,6 +11,8 @@ import org.bukkit.inventory.ItemStack
 import java.util.*
 import it.forgottenworld.tradingcards.util.Utils.Companion.cMsg
 import it.forgottenworld.tradingcards.util.Utils.Companion.wrapString
+import org.bukkit.NamespacedKey
+import org.bukkit.inventory.meta.tags.ItemTagType
 
 class CardManager() {
 
@@ -67,7 +69,9 @@ class CardManager() {
     }
 
     private fun getBlankCard(quantity: Int): ItemStack {
-        return ItemStack(Material.getMaterial(configManager.pluginConfig.config!!.getString("General.Card-Material")!!)!!, quantity)
+        val card = ItemStack(Material.getMaterial(configManager.pluginConfig.config!!.getString("General.Card-Material")!!)!!, quantity)
+        card.itemMeta?.customTagContainer?.setCustomTag(TradingCards.nameSpacedKey, ItemTagType.BYTE,1)
+        return card;
     }
 
     fun getNormalCard(cardName: String, rarity: String, num: Int): ItemStack {
