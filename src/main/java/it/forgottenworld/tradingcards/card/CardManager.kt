@@ -1,22 +1,18 @@
 package it.forgottenworld.tradingcards.card
 
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.config.ConfigManager
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import java.util.*
-import it.forgottenworld.tradingcards.util.Utils.Companion.cMsg
-import it.forgottenworld.tradingcards.util.Utils.Companion.wrapString
-import org.bukkit.NamespacedKey
 import org.bukkit.inventory.meta.tags.ItemTagType
+import java.util.*
 
-class CardManager() {
+class CardManager(val tradingCards: TradingCards) {
 
-    private val configManager = TradingCards.configManager
+    private val configManager = tradingCards.configManager
 
     fun createPlayerCard(cardName: String, rarity: String, num: Int, forcedShiny: Boolean): ItemStack {
         val config = configManager.pluginConfig.config!!
@@ -46,19 +42,19 @@ class CardManager() {
         val cost: String = if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.Buy-Price")) configManager.cardsConfig.config!!.getDouble("Cards.$rarity.$cardName.Buy-Price").toString() else "None"
         val cmeta = card.itemMeta
         if (isShiny) {
-            cmeta!!.setDisplayName(cMsg(config.getString("DisplayNames.Cards.ShinyTitle")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("%SHINYPREFIX%".toRegex(), shinyPrefix).replace("_".toRegex(), " ")))
-        } else cmeta!!.setDisplayName(cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
+            cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.ShinyTitle")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("%SHINYPREFIX%".toRegex(), shinyPrefix).replace("_".toRegex(), " ")))
+        } else cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
         val lore: MutableList<String?> = mutableListOf()
-        lore.add(cMsg("$typeColour$typeDisplay: &f$type"))
+        lore.add(tradingCards.utils.cMsg("$typeColour$typeDisplay: &f$type"))
         if (info == "None" || info == "") {
-            lore.add(cMsg("$infoColour$infoDisplay: &f$info"))
+            lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay: &f$info"))
         } else {
-            lore.add(cMsg("$infoColour$infoDisplay:"))
-            lore.addAll(wrapString(info))
+            lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay:"))
+            lore.addAll(tradingCards.utils.wrapString(info))
         }
-        lore.add(cMsg("$seriesColour$seriesDisplay: &f$series"))
-        if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.About")) lore.add(cMsg("$aboutColour$aboutDisplay: &f$about"))
-        if (isShiny) lore.add(cMsg(rarityColour + ChatColor.BOLD + config.getString("General.Shiny-Name") + " " + rarity)) else lore.add(cMsg(rarityColour + ChatColor.BOLD + rarity))
+        lore.add(tradingCards.utils.cMsg("$seriesColour$seriesDisplay: &f$series"))
+        if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.About")) lore.add(tradingCards.utils.cMsg("$aboutColour$aboutDisplay: &f$about"))
+        if (isShiny) lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + config.getString("General.Shiny-Name") + " " + rarity)) else lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + rarity))
         cmeta.lore = lore
         if (config.getBoolean("General.Hide-Enchants", true)) cmeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         card.itemMeta = cmeta
@@ -70,7 +66,7 @@ class CardManager() {
 
     private fun getBlankCard(quantity: Int): ItemStack {
         val card = ItemStack(Material.getMaterial(configManager.pluginConfig.config!!.getString("General.Card-Material")!!)!!, quantity)
-        card.itemMeta?.customTagContainer?.setCustomTag(TradingCards.nameSpacedKey, ItemTagType.BYTE,1)
+        card.itemMeta?.customTagContainer?.setCustomTag(tradingCards.nameSpacedKey, ItemTagType.BYTE, 1)
         return card;
     }
 
@@ -93,18 +89,18 @@ class CardManager() {
         val infoDisplay = config.getString("DisplayNames.Cards.Info", "Info")!!
         val cost: String = if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.Buy-Price")) configManager.cardsConfig.config!!.getDouble("Cards.$rarity.$cardName.Buy-Price").toString() else "None"
         val cmeta = card.itemMeta
-        cmeta!!.setDisplayName(cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
+        cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
         val lore: MutableList<String?> = mutableListOf()
-        lore.add(cMsg("$typeColour$typeDisplay: &f$type"))
+        lore.add(tradingCards.utils.cMsg("$typeColour$typeDisplay: &f$type"))
         if (info == "None" || info == "") {
-            lore.add(cMsg("$infoColour$infoDisplay: &f$info"))
+            lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay: &f$info"))
         } else {
-            lore.add(cMsg("$infoColour$infoDisplay:"))
-            lore.addAll(wrapString(info))
+            lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay:"))
+            lore.addAll(tradingCards.utils.wrapString(info))
         }
-        lore.add(cMsg("$seriesColour$seriesDisplay: &f$series"))
-        if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.About")) lore.add(cMsg("$aboutColour$aboutDisplay: &f$about"))
-        lore.add(cMsg(rarityColour + ChatColor.BOLD + rarity))
+        lore.add(tradingCards.utils.cMsg("$seriesColour$seriesDisplay: &f$series"))
+        if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.About")) lore.add(tradingCards.utils.cMsg("$aboutColour$aboutDisplay: &f$about"))
+        lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + rarity))
         cmeta.lore = lore
         if (config.getBoolean("General.Hide-Enchants", true)) cmeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         card.itemMeta = cmeta
@@ -134,14 +130,14 @@ class CardManager() {
                     configManager.cardsConfig.config!!["Cards.$rarity.$name.Info"] = info1
                     configManager.cardsConfig.save()
                     configManager.reloadCardsConfig()
-                    creator.sendMessage(cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateSuccess")!!.replace("%name%".toRegex(), name).replace("%rarity%".toRegex(), rarity)))
+                    creator.sendMessage(tradingCards.utils.cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateSuccess")!!.replace("%name%".toRegex(), name).replace("%rarity%".toRegex(), rarity)))
                 } else {
-                    creator.sendMessage(cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.NoRarity")))
+                    creator.sendMessage(tradingCards.utils.cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.NoRarity")))
                 }
             } else {
-                creator.sendMessage(cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateNoName")))
+                creator.sendMessage(tradingCards.utils.cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateNoName")))
             }
-        } else creator.sendMessage(cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateExists")))
+        } else creator.sendMessage(tradingCards.utils.cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateExists")))
     }
 
     fun getCardName(rarity: String, display: String): String {
@@ -220,19 +216,19 @@ class CardManager() {
             cost = if (configManager.cardsConfig.config!!.contains("Cards.$rare.$cardName.Buy-Price")) configManager.cardsConfig.config!!.getDouble("Cards.$rare.$cardName.Buy-Price").toString() else "None"
             val cmeta = card.itemMeta
             if (isShiny) {
-                cmeta!!.setDisplayName(cMsg(config.getString("DisplayNames.Cards.ShinyTitle")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName!!).replace("%COST%".toRegex(), cost).replace("%SHINYPREFIX%".toRegex(), shinyPrefix).replace("_".toRegex(), " ")))
-            } else cmeta!!.setDisplayName(cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName!!).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
+                cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.ShinyTitle")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName!!).replace("%COST%".toRegex(), cost).replace("%SHINYPREFIX%".toRegex(), shinyPrefix).replace("_".toRegex(), " ")))
+            } else cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName!!).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
             val lore: MutableList<String?> = mutableListOf()
-            lore.add(cMsg("$typeColour$typeDisplay: &f$type"))
+            lore.add(tradingCards.utils.cMsg("$typeColour$typeDisplay: &f$type"))
             if (info == "None" || info == "") {
-                lore.add(cMsg("$infoColour$infoDisplay: &f$info"))
+                lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay: &f$info"))
             } else {
-                lore.add(cMsg("$infoColour$infoDisplay:"))
-                lore.addAll(wrapString(info))
+                lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay:"))
+                lore.addAll(tradingCards.utils.wrapString(info))
             }
-            lore.add(cMsg("$seriesColour$seriesDisplay: &f$series"))
-            if (configManager.cardsConfig.config!!.contains("Cards.$rare.$cardName.About")) lore.add(cMsg("$aboutColour$aboutDisplay: &f$about"))
-            if (isShiny) lore.add(cMsg(rarityColour + ChatColor.BOLD + config.getString("General.Shiny-Name") + " " + rare)) else lore.add(cMsg(rarityColour + ChatColor.BOLD + rare))
+            lore.add(tradingCards.utils.cMsg("$seriesColour$seriesDisplay: &f$series"))
+            if (configManager.cardsConfig.config!!.contains("Cards.$rare.$cardName.About")) lore.add(tradingCards.utils.cMsg("$aboutColour$aboutDisplay: &f$about"))
+            if (isShiny) lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + config.getString("General.Shiny-Name") + " " + rare)) else lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + rare))
             cmeta.lore = lore
             if (config.getBoolean("General.Hide-Enchants", true)) cmeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
             card.itemMeta = cmeta

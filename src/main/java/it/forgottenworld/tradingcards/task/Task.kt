@@ -1,19 +1,18 @@
 package it.forgottenworld.tradingcards.task
 
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.util.Utils.Companion.cMsg
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import java.util.*
 
-class Task {
+class Task(val tradingCards: TradingCards) {
 
     var taskid : Int = -1
 
     fun startTimer() {
-        val config = TradingCards.configManager.pluginConfig.config!!
-        val cardsConfig = TradingCards.configManager.cardsConfig.config!!
-        val messagesConfig = TradingCards.configManager.messagesConfig.config!!
+        val config = tradingCards.configManager.pluginConfig.config!!
+        val cardsConfig = tradingCards.configManager.cardsConfig.config!!
+        val messagesConfig = tradingCards.configManager.messagesConfig.config!!
         val scheduler = Bukkit.getServer().scheduler
         if (scheduler.isQueued(taskid) || scheduler.isCurrentlyRunning(taskid)) {
             scheduler.cancelTask(taskid)
@@ -21,8 +20,8 @@ class Task {
         }
         val hours = if (config.getInt("General.Schedule-Card-Time-In-Hours") < 1) 1 else config.getInt("General.Schedule-Card-Time-In-Hours")
         val tmessage: String = messagesConfig.getString("Messages.TimerMessage")!!.replace("%hour%".toRegex(), hours.toString())
-        Bukkit.broadcastMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + tmessage))
-        taskid = Bukkit.getServer().scheduler.scheduleSyncRepeatingTask(TradingCards.instance, {
+        Bukkit.broadcastMessage(tradingCards.utils.cMsg(messagesConfig.getString("Messages.Prefix") + " " + tmessage))
+        taskid = Bukkit.getServer().scheduler.scheduleSyncRepeatingTask(tradingCards, {
             if (config.getBoolean("General.Debug-Mode")) println("[Cards] Task running..")
             if (config.getBoolean("General.Schedule-Cards")) {
                 if (config.getBoolean("General.Debug-Mode")) println("[Cards] Schedule cards is true.")
@@ -37,7 +36,7 @@ class Task {
                 }
                 if (config.getBoolean("General.Debug-Mode")) println("[Cards] keyToUse: $keyToUse")
                 if (keyToUse != "") {
-                    Bukkit.broadcastMessage(cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ScheduledGiveaway")))
+                    Bukkit.broadcastMessage(tradingCards.utils.cMsg(messagesConfig.getString("Messages.Prefix") + " " + messagesConfig.getString("Messages.ScheduledGiveaway")))
                     for (p in Bukkit.getOnlinePlayers()) {
                         val cards = cardsConfig.getConfigurationSection("Cards.$keyToUse")!!
                         val cardKeys = cards.getKeys(false)
@@ -52,11 +51,11 @@ class Task {
                             i++
                         }
                         if (p.inventory.firstEmpty() != -1) {
-                            p.inventory.addItem(TradingCards.cardManager.createPlayerCard(cardName, keyToUse, 1, false))
+                            p.inventory.addItem(tradingCards.cardManager.createPlayerCard(cardName, keyToUse, 1, false))
                         } else {
                             val curWorld = p.world
                             if (p.gameMode == GameMode.SURVIVAL) {
-                                curWorld.dropItem(p.location, TradingCards.cardManager.createPlayerCard(cardName, keyToUse, 1, false))
+                                curWorld.dropItem(p.location, tradingCards.cardManager.createPlayerCard(cardName, keyToUse, 1, false))
                             }
                         }
                     }

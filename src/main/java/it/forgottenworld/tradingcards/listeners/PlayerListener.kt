@@ -1,8 +1,6 @@
 package it.forgottenworld.tradingcards.listeners
 
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.card.CardManager
-import it.forgottenworld.tradingcards.util.Utils.Companion.cMsg
 import org.apache.commons.lang.WordUtils
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -22,12 +20,12 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.tags.ItemTagType
 import java.util.*
 
-class PlayerListener : Listener {
+class PlayerListener(val tradingCards: TradingCards) : Listener {
 
-    private val pluginConfig = TradingCards.configManager.pluginConfig.config!!
-    private val cardManager = TradingCards.cardManager
-    private val configManager = TradingCards.configManager
-    private val deckManager = TradingCards.deckManager
+    private val pluginConfig = tradingCards.configManager.pluginConfig.config!!
+    private val cardManager = tradingCards.cardManager
+    private val configManager = tradingCards.configManager
+    private val deckManager = tradingCards.deckManager
 
     @EventHandler
     fun onInventoryClose(e: InventoryCloseEvent) {
@@ -102,7 +100,7 @@ class PlayerListener : Listener {
                         val specialCardAmount: Int = ChatColor.stripColor(line2[0])!!.toInt()
                         var extraCardAmount = 0
                         if (hasExtra) extraCardAmount = ChatColor.stripColor(line3[0])!!.toInt()
-                        p.sendMessage(cMsg(configManager.messagesConfig.config!!.getString("Messages.Prefix") + " " + configManager.messagesConfig.config!!.getString("Messages.OpenBoosterPack")))
+                        p.sendMessage(tradingCards.utils.cMsg(configManager.messagesConfig.config!!.getString("Messages.Prefix") + " " + configManager.messagesConfig.config!!.getString("Messages.OpenBoosterPack")))
                         for (i in 0 until normalCardAmount) {
                             if (p.inventory.firstEmpty() != -1) {
                                 p.inventory.addItem(cardManager.generateCard(WordUtils.capitalizeFully(line1[1])))
@@ -134,7 +132,7 @@ class PlayerListener : Listener {
                             }
                         }
                     }
-                } else event.player.sendMessage(cMsg(configManager.messagesConfig.config!!.getString("Messages.Prefix") + " " + configManager.messagesConfig.config!!.getString("Messages.NoCreative")))
+                } else event.player.sendMessage(tradingCards.utils.cMsg(configManager.messagesConfig.config!!.getString("Messages.Prefix") + " " + configManager.messagesConfig.config!!.getString("Messages.NoCreative")))
             }
             if (p.inventory.getItem(p.inventory.heldItemSlot)?.type == Material.valueOf(pluginConfig.getString("General.Deck-Material")!!)) {
                 if (pluginConfig.getBoolean("General.Debug-Mode")) println("[Cards] Deck material...")
@@ -201,12 +199,12 @@ class PlayerListener : Listener {
             val rarities = pluginConfig.getConfigurationSection("Rarities")!!
             var i = 1
             val rarityKeys = rarities.getKeys(false)
-            val children = TradingCards.permRarities.children
+            val children = tradingCards.permRarities.children
             var rarity = pluginConfig.getString("General.Auto-Add-Player-Rarity")!!
             for (key in rarityKeys) {
                 i++
                 children["fwtc.rarity.$key"] = java.lang.Boolean.FALSE
-                TradingCards.permRarities.recalculatePermissibles()
+                tradingCards.permRarities.recalculatePermissibles()
                 if (p.hasPermission("fwtc.rarity.$key")) {
                     rarity = key
                     break
@@ -228,14 +226,14 @@ class PlayerListener : Listener {
     }
 
     @EventHandler
-    fun onPlayerCraft(e: CraftItemEvent){
+    fun onPlayerCraft(e: CraftItemEvent) {
         val items = e.inventory.contents
         items.forEach { item ->
             val customTagContainer = item.itemMeta?.customTagContainer
-            if(customTagContainer != null && customTagContainer.hasCustomTag(TradingCards.nameSpacedKey, ItemTagType.BYTE)){
+            if (customTagContainer != null && customTagContainer.hasCustomTag(tradingCards.nameSpacedKey, ItemTagType.BYTE)) {
                 e.isCancelled = true
                 return
             }
-         }
+        }
     }
 }

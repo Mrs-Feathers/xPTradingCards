@@ -1,7 +1,6 @@
 package it.forgottenworld.tradingcards.deck
 
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.util.Utils.Companion.cMsg
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
@@ -10,28 +9,28 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.tags.ItemTagType
 
-class DeckManager {
+class DeckManager(val tradingCards: TradingCards) {
 
-    val config = TradingCards.configManager.pluginConfig.config!!
+    val config = tradingCards.configManager.pluginConfig.config!!
 
     private val blankDeck: ItemStack
         get() {
             val itemStack = ItemStack(Material.getMaterial(config.getString("General.Deck-Material")!!)!!)
-            itemStack.itemMeta?.customTagContainer?.setCustomTag(TradingCards.nameSpacedKey, ItemTagType.BYTE, 1)
+            itemStack.itemMeta?.customTagContainer?.setCustomTag(tradingCards.nameSpacedKey, ItemTagType.BYTE, 1)
             return itemStack
         }
 
     private val blankBoosterPack: ItemStack
         get() {
             val itemStack = ItemStack(Material.getMaterial(config.getString("General.BoosterPack-Material")!!)!!)
-            itemStack.itemMeta?.customTagContainer?.setCustomTag(TradingCards.nameSpacedKey, ItemTagType.BYTE,1)
+            itemStack.itemMeta?.customTagContainer?.setCustomTag(tradingCards.nameSpacedKey, ItemTagType.BYTE, 1)
             return itemStack
         }
 
     fun createDeck(p: Player, num: Int): ItemStack {
         val deck = blankDeck
         val deckMeta = deck.itemMeta
-        deckMeta!!.setDisplayName(cMsg(config.getString("General.Deck-Prefix") + p.name + "'s Deck #" + num))
+        deckMeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("General.Deck-Prefix") + p.name + "'s Deck #" + num))
         if (config.getBoolean("General.Hide-Enchants", true)) deckMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         deck.itemMeta = deckMeta
         deck.addUnsafeEnchantment(Enchantment.DURABILITY, 10)
@@ -55,7 +54,7 @@ class DeckManager {
     }
 
     fun openDeck(p: Player, deckNum: Int) {
-        val cardsConfig = TradingCards.configManager.cardsConfig.config!!
+        val cardsConfig = tradingCards.configManager.cardsConfig.config!!
         if (config.getBoolean("General.Debug-Mode")) println("[Cards] Deck opened.")
         val uuidString = p.uniqueId.toString()
         if (config.getBoolean("General.Debug-Mode")) println("[Cards] Deck UUID: $uuidString")
@@ -67,15 +66,15 @@ class DeckManager {
             if (config.getBoolean("General.Debug-Mode")) println("[Cards] Deck file content: $s")
             val splitContents: Array<String> = s.split(",").toTypedArray()
             card = if (splitContents[3].equals("yes", ignoreCase = true)) {
-                TradingCards.cardManager.createPlayerCard(splitContents[1], splitContents[0], Integer.valueOf(splitContents[2]), true)
-            } else TradingCards.cardManager.getNormalCard(splitContents[1], splitContents[0], Integer.valueOf(splitContents[2]))
+                tradingCards.cardManager.createPlayerCard(splitContents[1], splitContents[0], Integer.valueOf(splitContents[2]), true)
+            } else tradingCards.cardManager.getNormalCard(splitContents[1], splitContents[0], Integer.valueOf(splitContents[2]))
             cards.add(card)
             quantity.add(Integer.valueOf(splitContents[2]))
             if (config.getBoolean("General.Debug-Mode")) {
                 println("[Cards] Put " + card + "," + splitContents[2] + " into respective lists.")
             }
         }
-        val inv = Bukkit.createInventory(null, 27, cMsg("&c" + p.name + "'s Deck #" + deckNum))
+        val inv = Bukkit.createInventory(null, 27, tradingCards.utils.cMsg("&c" + p.name + "'s Deck #" + deckNum))
         if (config.getBoolean("General.Debug-Mode")) println("[Cards] Created inventory.")
         var iter = 0
         for (i in cards) {
@@ -110,11 +109,11 @@ class DeckManager {
         }
         val specialCardColour = config.getString("Colours.BoosterPackSpecialCards")!!
         val pMeta = boosterPack.itemMeta
-        pMeta!!.setDisplayName(cMsg(prefix + nameColour + name.replace("_".toRegex(), " ")))
+        pMeta!!.setDisplayName(tradingCards.utils.cMsg(prefix + nameColour + name.replace("_".toRegex(), " ")))
         val lore: MutableList<String?> = mutableListOf()
-        lore.add(cMsg(normalCardColour + numNormalCards + loreColour + " " + normalRarity.toUpperCase()))
-        if (hasExtraRarity) lore.add(cMsg(extraCardColour + numExtraCards + loreColour + " " + extraRarity.toUpperCase()))
-        lore.add(cMsg(specialCardColour + numSpecialCards + loreColour + " " + specialRarity.toUpperCase()))
+        lore.add(tradingCards.utils.cMsg(normalCardColour + numNormalCards + loreColour + " " + normalRarity.toUpperCase()))
+        if (hasExtraRarity) lore.add(tradingCards.utils.cMsg(extraCardColour + numExtraCards + loreColour + " " + extraRarity.toUpperCase()))
+        lore.add(tradingCards.utils.cMsg(specialCardColour + numSpecialCards + loreColour + " " + specialRarity.toUpperCase()))
         pMeta.lore = lore
         if (config.getBoolean("General.Hide-Enchants", true)) pMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         boosterPack.itemMeta = pMeta
