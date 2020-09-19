@@ -12,7 +12,7 @@ import kotlin.math.max
 class Utils {
     companion object {
         private var hostileMobs: Set<EntityType> = setOf(EntityType.SPIDER, EntityType.ZOMBIE, EntityType.SKELETON, EntityType.CREEPER, EntityType.BLAZE, EntityType.SILVERFISH, EntityType.GHAST, EntityType.SLIME, EntityType.GUARDIAN, EntityType.MAGMA_CUBE, EntityType.WITCH, EntityType.ENDERMITE)
-        private var neutralMobs: Set<EntityType> = setOf(EntityType.ENDERMAN, EntityType.PIG_ZOMBIE, EntityType.WOLF, EntityType.SNOWMAN, EntityType.IRON_GOLEM)
+        private var neutralMobs: Set<EntityType> = setOf(EntityType.ENDERMAN, EntityType.PIGLIN, EntityType.WOLF, EntityType.SNOWMAN, EntityType.IRON_GOLEM)
         private var passiveMobs: Set<EntityType> = setOf(EntityType.CHICKEN, EntityType.COW, EntityType.SQUID, EntityType.SHEEP, EntityType.PIG, EntityType.RABBIT, EntityType.VILLAGER, EntityType.BAT, EntityType.HORSE)
         private var bossMobs: Set<EntityType> = setOf(EntityType.ENDER_DRAGON, EntityType.WITHER)
 
