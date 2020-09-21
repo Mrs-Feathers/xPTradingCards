@@ -10,6 +10,7 @@ import java.io.IOException
 import java.util.logging.Level
 
 class Config(private val configFile: File, private val plugin: JavaPlugin) {
+
     private val logger = Bukkit.getLogger()
 
     /**
@@ -26,7 +27,7 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
      * @param configName Name of the config file
      * @param plugin     Instance of the plugin
      */
-    constructor(configName: String, plugin: JavaPlugin) : this(File(plugin.dataFolder, configName), plugin) {}
+    constructor(configName: String, plugin: JavaPlugin) : this(File(plugin.dataFolder, configName), plugin)
 
     /**
      * Saves current config values
@@ -35,59 +36,62 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
         try {
             config!!.save(configFile)
         } catch (e: IOException) {
-            logger.log(Level.SEVERE, "Error while saving the config file " + ChatColor.RED + configFile.name)
+            logger.log(Level.SEVERE, "Error while saving the config file ${ChatColor.RED}${configFile.name}")
             e.printStackTrace()
         }
     }
 
-    private fun exists(): Boolean {
-        return if (configFile.exists()) {
-            logger.info(configFile.name + " has been found")
-            true
-        } else {
-            logger.info(configFile.name + " " +
-                    "was not been found")
-            false
-        }
+    private fun exists() = configFile.exists().also {
+        logger.info("${configFile.name} has ${if (!it) "not " else ""}been found")
     }
 
     @Throws(IOException::class)
     private fun createConfig() {
-        logger.info("Creating " + configFile.name + "...")
-        if (!configFile.parentFile.exists()) {
-            val result = configFile.parentFile.mkdirs()
-            if (!result) throw IOException("Error creating " + configFile.parentFile.name)
-        }
-        if (plugin.getResource(configFile.name) != null) {
+
+        logger.info("Creating ${configFile.name}...")
+
+        if (!configFile.parentFile.exists() && !configFile.parentFile.mkdirs())
+            throw IOException("Error creating ${configFile.parentFile.name}")
+
+        if (plugin.getResource(configFile.name) != null)
             plugin.saveResource(configFile.name, false)
-        } else {
-            if (!configFile.exists()) {
-                val result = configFile.createNewFile()
-                if (result) {
-                    logger.log(Level.INFO, configFile.name + "has been created")
-                } else {
-                    logger.log(Level.SEVERE, ChatColor.DARK_RED.toString() + "" + ChatColor.UNDERLINE + "Error creating " + configFile.name)
-                    throw IOException("Error creating " + configFile.name)
-                }
+        else if (!configFile.exists()) {
+            if (configFile.createNewFile())
+                logger.log(Level.INFO, "${configFile.name}has been created")
+            else {
+                logger.log(Level.SEVERE, "${ChatColor.DARK_RED}${ChatColor.UNDERLINE}Error creating ${configFile.name}")
+                throw IOException("Error creating ${configFile.name}")
             }
         }
     }
 
     private fun loadConfig() {
         config = YamlConfiguration.loadConfiguration(configFile)
-        logger.info(configFile.name + " has been loaded")
+        logger.info("${configFile.name} has been loaded")
     }
 
     /**
      * Use this constructor in case you want to load an existing file
      *
-     * @param configFile The file you want to load
      */
     init {
-        if (exists()) {
+        if (exists())
             loadConfig()
-        } else {
+        else
             createConfig()
-        }
     }
+
+    companion object {
+        val PLUGIN
+            get() = ConfigManager.pluginConfig.config!!
+        val DECKS
+            get() = ConfigManager.decksConfig.config!!
+        val CARDS
+            get() = ConfigManager.cardsConfig.config!!
+        val MESSAGES
+            get() = ConfigManager.messagesConfig.config!!
+        val DEBUG
+            get() = PLUGIN.getBoolean("General.Debug-Mode")
+    }
+
 }

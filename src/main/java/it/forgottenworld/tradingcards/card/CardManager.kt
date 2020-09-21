@@ -1,242 +1,206 @@
 package it.forgottenworld.tradingcards.card
 
 import it.forgottenworld.tradingcards.TradingCards
+import it.forgottenworld.tradingcards.config.Config
+import it.forgottenworld.tradingcards.config.ConfigManager
+import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.util.wrapString
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.tags.ItemTagType
+import org.bukkit.persistence.PersistentDataType
 import java.util.*
 
-class CardManager(val tradingCards: TradingCards) {
+object CardManager {
 
-    private val configManager = tradingCards.configManager
+    private fun getCardFromConfig(rarity: String, cardName: String): Card {
+        val config = Config.PLUGIN
+        val cardConfig = Config.CARDS
 
-    fun createPlayerCard(cardName: String, rarity: String, num: Int, forcedShiny: Boolean): ItemStack {
-        val config = configManager.pluginConfig.config!!
-        val card = getBlankCard(num)
-        val hasShinyVersion = configManager.cardsConfig.config!!.getBoolean("Cards.$rarity.$cardName.Has-Shiny-Version")
-        var isShiny = false
-        if (hasShinyVersion) {
-            val shinyRandom = Random().nextInt(100) + 1
-            if (shinyRandom <= config.getInt("Chances.Shiny-Version-Chance")) isShiny = true
-        }
-        if (forcedShiny) isShiny = true
-        val rarityColour = config.getString("Rarities.$rarity.Colour")!!
-        val prefix = config.getString("General.Card-Prefix")!!
-        val series = configManager.cardsConfig.config!!.getString("Cards.$rarity.$cardName.Series")!!
-        val seriesColour = config.getString("Colours.Series")!!
-        val seriesDisplay = config.getString("DisplayNames.Cards.Series", "Series")!!
-        val about = configManager.cardsConfig.config!!.getString("Cards.$rarity.$cardName.About", "None")!!
-        val aboutColour = config.getString("Colours.About")!!
-        val aboutDisplay = config.getString("DisplayNames.Cards.About", "About")!!
-        val type = configManager.cardsConfig.config!!.getString("Cards.$rarity.$cardName.Type")!!
-        val typeColour = config.getString("Colours.Type")!!
-        val typeDisplay = config.getString("DisplayNames.Cards.Type", "Type")!!
-        val info = configManager.cardsConfig.config!!.getString("Cards.$rarity.$cardName.Info")!!
-        val infoColour = config.getString("Colours.Info")!!
-        val infoDisplay = config.getString("DisplayNames.Cards.Info", "Info")!!
+        return Card(
+                config.getString("Rarities.$rarity.Colour")!!,
+                config.getString("General.Card-Prefix")!!,
+                cardConfig.getString("Cards.$rarity.$cardName.Series")!!,
+                config.getString("Colours.Series")!!,
+                config.getString("DisplayNames.Cards.Series", "Series")!!,
+                cardConfig.getString("Cards.$rarity.$cardName.About", "None")!!,
+                config.getString("Colours.About")!!,
+                config.getString("DisplayNames.Cards.About", "About")!!,
+                cardConfig.getString("Cards.$rarity.$cardName.Type")!!,
+                config.getString("Colours.Type")!!,
+                config.getString("DisplayNames.Cards.Type", "Type")!!,
+                cardConfig.getString("Cards.$rarity.$cardName.Info")!!,
+                config.getString("Colours.Info")!!,
+                config.getString("DisplayNames.Cards.Info", "Info")!!,
+                if (Config.CARDS.contains("Cards.$rarity.$cardName.Buy-Price"))
+                    Config.CARDS.getDouble("Cards.$rarity.$cardName.Buy-Price").toString()
+                else
+                    "None"
+        )
+    }
+
+    private fun setDisplayName(card: ItemStack, crd: Card, cardName: String, isShiny: Boolean) {
+        val config = Config.PLUGIN
+        val cmeta = card.itemMeta
         val shinyPrefix = config.getString("General.Shiny-Name")!!
-        val cost: String = if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.Buy-Price")) configManager.cardsConfig.config!!.getDouble("Cards.$rarity.$cardName.Buy-Price").toString() else "None"
-        val cmeta = card.itemMeta
-        if (isShiny) {
-            cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.ShinyTitle")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("%SHINYPREFIX%".toRegex(), shinyPrefix).replace("_".toRegex(), " ")))
-        } else cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
-        val lore: MutableList<String?> = mutableListOf()
-        lore.add(tradingCards.utils.cMsg("$typeColour$typeDisplay: &f$type"))
-        if (info == "None" || info == "") {
-            lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay: &f$info"))
-        } else {
-            lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay:"))
-            lore.addAll(tradingCards.utils.wrapString(info))
+        cmeta?.setDisplayName(cMsg(config.getString(
+                "DisplayNames.Cards.ShinyTitle")!!
+                .replace("%PREFIX%", crd.prefix)
+                .replace("%COLOUR%", crd.rarityColor)
+                .replace("%NAME%", cardName)
+                .replace("%COST%", crd.cost)
+                .replace("_", " "))
+                .let { if (isShiny) it.replace("%SHINYPREFIX%", shinyPrefix) else it })
+    }
+
+    private fun setLore(card: ItemStack, crd: Card, cardName: String, isShiny: Boolean, rarity: String) {
+        val config = Config.PLUGIN
+        card.itemMeta?.lore = mutableListOf(cMsg("${crd.typeColour}${crd.typeDisplay}: &f${crd.type}")).apply {
+
+            if (crd.info == "None" || crd.info == "")
+                add(cMsg("${crd.infoColor}${crd.infoDisplay}: &f${crd.info}"))
+            else {
+                add(cMsg("${crd.infoColor}${crd.infoDisplay}:"))
+                addAll(wrapString(crd.info))
+            }
+
+            add(cMsg("${crd.seriesColor}${crd.seriesDisplay}: &f${crd.series}"))
+
+            if (Config.CARDS.contains("Cards.$crd.rarity.$cardName.About"))
+                add(cMsg("${crd.aboutColor}${crd.aboutDisplay}: &f${crd.about}"))
+
+            add(cMsg("${crd.rarityColor}${ChatColor.BOLD}${
+                if (isShiny) "${config.getString("General.Shiny-Name")} " else ""}$rarity"))
         }
-        lore.add(tradingCards.utils.cMsg("$seriesColour$seriesDisplay: &f$series"))
-        if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.About")) lore.add(tradingCards.utils.cMsg("$aboutColour$aboutDisplay: &f$about"))
-        if (isShiny) lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + config.getString("General.Shiny-Name") + " " + rarity)) else lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + rarity))
-        cmeta.lore = lore
-        if (config.getBoolean("General.Hide-Enchants", true)) cmeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
-        card.itemMeta = cmeta
-        if (isShiny) {
+
+        if (config.getBoolean("General.Hide-Enchants", true))
+            card.itemMeta?.addItemFlags(ItemFlag.HIDE_ENCHANTS)
+
+        if (isShiny)
             card.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, 10)
-        }
-        return card
     }
 
-    private fun getBlankCard(quantity: Int): ItemStack {
-        val card = ItemStack(Material.getMaterial(configManager.pluginConfig.config!!.getString("General.Card-Material")!!)!!, quantity)
-        card.itemMeta?.customTagContainer?.setCustomTag(tradingCards.nameSpacedKey, ItemTagType.BYTE, 1)
-        return card;
-    }
+    private fun getBlankCard(quantity: Int) =
+            ItemStack(Material.getMaterial(Config.PLUGIN.getString("General.Card-Material")!!)!!, quantity).apply {
+                itemMeta?.persistentDataContainer?.set(TradingCards.nameSpacedKey, PersistentDataType.BYTE,1)
+            }
 
-    fun getNormalCard(cardName: String, rarity: String, num: Int): ItemStack {
-        val config = configManager.pluginConfig.config!!
+    private fun getIsShiny(rarity: String, cardName: String) =
+            Config.CARDS.getBoolean("Cards.$rarity.$cardName.Has-Shiny-Version") &&
+                Random().nextInt(100) + 1 <= Config.PLUGIN.getInt("Chances.Shiny-Version-Chance")
+
+    fun getCard(cardName: String, rarity: String, num: Int, isShiny: Boolean = false): ItemStack {
+
         val card = getBlankCard(num)
-        val rarityColour = config.getString("Rarities.$rarity.Colour")!!
-        val prefix = config.getString("General.Card-Prefix")!!
-        val series = configManager.cardsConfig.config!!.getString("Cards.$rarity.$cardName.Series")!!
-        val seriesColour = config.getString("Colours.Series")!!
-        val seriesDisplay = config.getString("DisplayNames.Cards.Series", "Series")!!
-        val about = configManager.cardsConfig.config!!.getString("Cards.$rarity.$cardName.About", "None")!!
-        val aboutColour = config.getString("Colours.About")!!
-        val aboutDisplay = config.getString("DisplayNames.Cards.About", "About")!!
-        val type = configManager.cardsConfig.config!!.getString("Cards.$rarity.$cardName.Type")!!
-        val typeColour = config.getString("Colours.Type")!!
-        val typeDisplay = config.getString("DisplayNames.Cards.Type", "Type")!!
-        val info = configManager.cardsConfig.config!!.getString("Cards.$rarity.$cardName.Info")!!
-        val infoColour = config.getString("Colours.Info")!!
-        val infoDisplay = config.getString("DisplayNames.Cards.Info", "Info")!!
-        val cost: String = if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.Buy-Price")) configManager.cardsConfig.config!!.getDouble("Cards.$rarity.$cardName.Buy-Price").toString() else "None"
-        val cmeta = card.itemMeta
-        cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
-        val lore: MutableList<String?> = mutableListOf()
-        lore.add(tradingCards.utils.cMsg("$typeColour$typeDisplay: &f$type"))
-        if (info == "None" || info == "") {
-            lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay: &f$info"))
-        } else {
-            lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay:"))
-            lore.addAll(tradingCards.utils.wrapString(info))
-        }
-        lore.add(tradingCards.utils.cMsg("$seriesColour$seriesDisplay: &f$series"))
-        if (configManager.cardsConfig.config!!.contains("Cards.$rarity.$cardName.About")) lore.add(tradingCards.utils.cMsg("$aboutColour$aboutDisplay: &f$about"))
-        lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + rarity))
-        cmeta.lore = lore
-        if (config.getBoolean("General.Hide-Enchants", true)) cmeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
-        card.itemMeta = cmeta
+        val crd = getCardFromConfig(rarity, cardName)
+
+        setDisplayName(card, crd, cardName, isShiny)
+        setLore(card, crd, cardName, isShiny, rarity)
+
         return card
     }
+
+    fun createPlayerCard(cardName: String, rarity: String, num: Int, forcedShiny: Boolean) =
+            getCard(cardName, rarity, num, if (forcedShiny) true else getIsShiny(rarity, cardName))
 
     fun createCard(creator: Player, rarity: String, name: String, series: String, type: String, hasShiny: Boolean, info: String) {
-        if (!configManager.cardsConfig.config!!.contains("Cards.$rarity.$name")) {
-            if (name.matches(Regex("^[a-zA-Z0-9-_]+$"))) {
-                val rarities = configManager.cardsConfig.config!!.getConfigurationSection("Cards")!!
-                val rarityKeys = rarities.getKeys(false)
-                var keyToUse = ""
-                for (key in rarityKeys) {
-                    if (key.equals(rarity, ignoreCase = true)) {
-                        keyToUse = key
-                    }
-                }
-                if (keyToUse != "") {
-                    val regex = Regex("^[a-zA-Z0-9-_]+$")
-                    val series1 = if (series.matches(regex)) series else "None"
-                    val type1 = if (type.matches(regex)) type else "None"
-                    val info1 = if (info.matches(regex)) info else "None"
-                    val hasShiny1: Boolean = hasShiny
-                    configManager.cardsConfig.config!!["Cards.$rarity.$name.Series"] = series1
-                    configManager.cardsConfig.config!!["Cards.$rarity.$name.Type"] = type1
-                    configManager.cardsConfig.config!!["Cards.$rarity.$name.Has-Shiny-Version"] = hasShiny1
-                    configManager.cardsConfig.config!!["Cards.$rarity.$name.Info"] = info1
-                    configManager.cardsConfig.save()
-                    configManager.reloadCardsConfig()
-                    creator.sendMessage(tradingCards.utils.cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateSuccess")!!.replace("%name%".toRegex(), name).replace("%rarity%".toRegex(), rarity)))
-                } else {
-                    creator.sendMessage(tradingCards.utils.cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.NoRarity")))
-                }
-            } else {
-                creator.sendMessage(tradingCards.utils.cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateNoName")))
-            }
-        } else creator.sendMessage(tradingCards.utils.cMsg(configManager.cardsConfig.config!!.getString("Messages.Prefix") + " " + configManager.cardsConfig.config!!.getString("Messages.CreateExists")))
+
+        if (Config.CARDS.contains("Cards.$rarity.$name")) {
+            creator.sendMessage(cMsg("${Config.CARDS.getString("Messages.Prefix")} ${Config.CARDS.getString("Messages.CreateExists")}"))
+            return
+        }
+
+        val regex = Regex("^[a-zA-Z0-9-_]+$")
+
+        if (!name.matches(regex)) {
+            creator.sendMessage(cMsg("${Config.CARDS.getString("Messages.Prefix")} ${Config.CARDS.getString("Messages.CreateNoName")}"))
+            return
+        }
+
+        val keyToUse = Config.CARDS
+                .getConfigurationSection("Cards")!!
+                .getKeys(false)
+                .find { it.equals(rarity, ignoreCase = true) }
+                ?: ""
+
+        if (keyToUse.isEmpty()) {
+            creator.sendMessage(cMsg("${Config.CARDS.getString("Messages.Prefix")} ${Config.CARDS.getString("Messages.NoRarity")}"))
+            return
+        }
+
+        Config.CARDS["Cards.$rarity.$name.Series"] = if (series.matches(regex)) series else "None"
+        Config.CARDS["Cards.$rarity.$name.Type"] = if (type.matches(regex)) type else "None"
+        Config.CARDS["Cards.$rarity.$name.Has-Shiny-Version"] = hasShiny
+        Config.CARDS["Cards.$rarity.$name.Info"] = if (info.matches(regex)) info else "None"
+
+        ConfigManager.cardsConfig.save()
+        ConfigManager.reloadCardsConfig()
+        creator.sendMessage(cMsg(
+                "${Config.CARDS.getString("Messages.Prefix")} ${Config.CARDS.getString("Messages.CreateSuccess")!!
+                        .replace("%name%", name)
+                        .replace("%rarity%", rarity)}"))
+
     }
 
     fun getCardName(rarity: String, display: String): String {
-        val config = configManager.pluginConfig.config!!
-        var hasPrefix = false
-        var prefix: String? = ""
-        if (config.contains("General.Card-Prefix") && config.getString("General.Card-Prefix") !== "") {
-            hasPrefix = true
-            prefix = ChatColor.stripColor(config.getString("General.Card-Prefix"))
-        }
+
+        val config = Config.PLUGIN
+
+        val hasPrefix = config.contains("General.Card-Prefix") && !config.getString("General.Card-Prefix").isNullOrBlank()
+        val prefix = if (hasPrefix) ChatColor.stripColor(config.getString("General.Card-Prefix")) ?: "" else ""
         val shinyPrefix = config.getString("General.Shiny-Name")!!
-        var cleaned = ChatColor.stripColor(display)
-        if (hasPrefix) cleaned = cleaned!!.replace(prefix!!.toRegex(), "")
-        cleaned = cleaned!!.replace(shinyPrefix + " ".toRegex(), "")
-        val cleanedArray: Array<String> = cleaned.split(" ").toTypedArray()
-        val cs = configManager.cardsConfig.config!!.getConfigurationSection("Cards.$rarity")!!
-        val keys = cs.getKeys(false)
-        for (s in keys) {
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] getCardName s: $s")
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] getCardName display: $display")
+
+        val cleanedArray = ChatColor.stripColor(display)!!.let {
+            if (hasPrefix)
+                it.replace(prefix, "")
+            else
+                it
+        }.replace("$shinyPrefix ", "").split(" ")
+
+        val keys = Config.CARDS.getConfigurationSection("Cards.$rarity")!!.getKeys(false)
+
+        return keys.find { s ->
+
+            if (Config.DEBUG) {
+                println("[Cards] getCardName s: $s")
+                println("[Cards] getCardName display: $display")
+            }
+
             val regex = Regex(".*\\b$s\\b.*")
             if (cleanedArray.size > 1) {
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] cleanedArray > 1")
-                if ((cleanedArray[0] + "_" + cleanedArray[1]).matches(regex)) return s
-                if (cleanedArray.size > 2 && (cleanedArray[1] + "_" + cleanedArray[2]).matches(regex)) return s
-                if (cleanedArray.size > 3 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3]).matches(regex)) return s
-                if (cleanedArray.size > 4 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3] + "_" + cleanedArray[4]).matches(Regex(".*\\b$s\\b.*"))) return s
-                if (cleanedArray.size > 5 && (cleanedArray[1] + "_" + cleanedArray[2] + "_" + cleanedArray[3] + "_" + cleanedArray[4] + "_" + cleanedArray[5]).matches(Regex(".*\\b$s\\b.*"))) return s
-                if (cleanedArray[0].matches(regex)) return s
-                if (cleanedArray[1].matches(regex)) {
-                    return s
-                }
-            } else if (cleanedArray[0].matches(regex)) {
-                return s
-            }
-        }
-        return "None"
+                "${cleanedArray[0]}_${cleanedArray[1]}".matches(regex) ||
+                        cleanedArray.size > 2 && cleanedArray.drop(1).joinToString("_").matches(regex) ||
+                        cleanedArray[0].matches(regex) ||
+                        cleanedArray[1].matches(regex)
+                /*if (cleanedArray.size > 2 && ("${cleanedArray[1]}_${cleanedArray[2]}").matches(regex)) return s
+                if (cleanedArray.size > 3 && ("${cleanedArray[1]}_${cleanedArray[2]}_${cleanedArray[3]}").matches(regex)) return s
+                if (cleanedArray.size > 4 && ("${cleanedArray[1]}_${cleanedArray[2]}_${cleanedArray[3]}_${cleanedArray[4]}").matches(Regex(".*\\b$s\\b.*"))) return s
+                if (cleanedArray.size > 5 && ("${cleanedArray[1]}_${cleanedArray[2]}_${cleanedArray[3]}_${cleanedArray[4]}_${cleanedArray[5]}").matches(Regex(".*\\b$s\\b.*"))) return s*/
+            } else cleanedArray[0].matches(regex)
+            
+            false
+        } ?: "None"
+
     }
 
-    fun generateCard(rare: String?): ItemStack? {
-        val config = configManager.pluginConfig.config!!
-        if (rare != "None") {
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] generateCard.rare: $rare")
-            val card = getBlankCard(1)
-            configManager.reloadPluginConfig()
-            val cardSection = configManager.cardsConfig.config!!.getConfigurationSection("Cards.$rare")!!
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] generateCard.cardSection: " + configManager.cardsConfig.config!!.contains(StringBuilder("Cards.").append(rare).toString()))
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] generateCard.rarity: $rare")
-            val cards = cardSection.getKeys(false)
-            val cardNames: MutableList<String?> = mutableListOf()
-            cardNames.addAll(cards)
-            val cIndex = Random().nextInt(cardNames.size)
-            val cardName = cardNames[cIndex]
-            val hasShinyVersion = configManager.cardsConfig.config!!.getBoolean("Cards.$rare.$cardName.Has-Shiny-Version")
-            var isShiny = false
-            if (hasShinyVersion) {
-                val shinyRandom = Random().nextInt(100) + 1
-                if (shinyRandom <= config.getInt("Chances.Shiny-Version-Chance")) isShiny = true
-            }
-            val rarityColour = config.getString("Rarities.$rare.Colour")!!
-            val prefix = config.getString("General.Card-Prefix")!!
-            val series = configManager.cardsConfig.config!!.getString("Cards.$rare.$cardName.Series")!!
-            val seriesColour = config.getString("Colours.Series")!!
-            val seriesDisplay = config.getString("DisplayNames.Cards.Series", "Series")!!
-            val about = configManager.cardsConfig.config!!.getString("Cards.$rare.$cardName.About", "None")!!
-            val aboutColour = config.getString("Colours.About")!!
-            val aboutDisplay = config.getString("DisplayNames.Cards.About", "About")!!
-            val type = configManager.cardsConfig.config!!.getString("Cards.$rare.$cardName.Type")!!
-            val typeColour = config.getString("Colours.Type")!!
-            val typeDisplay = config.getString("DisplayNames.Cards.Type", "Type")!!
-            val info = configManager.cardsConfig.config!!.getString("Cards.$rare.$cardName.Info")!!
-            val infoColour = config.getString("Colours.Info")!!
-            val infoDisplay = config.getString("DisplayNames.Cards.Info", "Info")!!
-            val shinyPrefix = config.getString("General.Shiny-Name")!!
-            val cost: String
-            cost = if (configManager.cardsConfig.config!!.contains("Cards.$rare.$cardName.Buy-Price")) configManager.cardsConfig.config!!.getDouble("Cards.$rare.$cardName.Buy-Price").toString() else "None"
-            val cmeta = card.itemMeta
-            if (isShiny) {
-                cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.ShinyTitle")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName!!).replace("%COST%".toRegex(), cost).replace("%SHINYPREFIX%".toRegex(), shinyPrefix).replace("_".toRegex(), " ")))
-            } else cmeta!!.setDisplayName(tradingCards.utils.cMsg(config.getString("DisplayNames.Cards.Title")!!.replace("%PREFIX%".toRegex(), prefix).replace("%COLOUR%".toRegex(), rarityColour).replace("%NAME%".toRegex(), cardName!!).replace("%COST%".toRegex(), cost).replace("_".toRegex(), " ")))
-            val lore: MutableList<String?> = mutableListOf()
-            lore.add(tradingCards.utils.cMsg("$typeColour$typeDisplay: &f$type"))
-            if (info == "None" || info == "") {
-                lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay: &f$info"))
-            } else {
-                lore.add(tradingCards.utils.cMsg("$infoColour$infoDisplay:"))
-                lore.addAll(tradingCards.utils.wrapString(info))
-            }
-            lore.add(tradingCards.utils.cMsg("$seriesColour$seriesDisplay: &f$series"))
-            if (configManager.cardsConfig.config!!.contains("Cards.$rare.$cardName.About")) lore.add(tradingCards.utils.cMsg("$aboutColour$aboutDisplay: &f$about"))
-            if (isShiny) lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + config.getString("General.Shiny-Name") + " " + rare)) else lore.add(tradingCards.utils.cMsg(rarityColour + ChatColor.BOLD + rare))
-            cmeta.lore = lore
-            if (config.getBoolean("General.Hide-Enchants", true)) cmeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
-            card.itemMeta = cmeta
-            if (isShiny) {
-                card.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, 10)
-            }
-            return card
+    fun generateCard(rarity: String): ItemStack? {
+
+        if (rarity == "None") return null
+
+        if (Config.DEBUG) {
+            println("[Cards] generateCard.rare: $rarity")
+            println("[Cards] generateCard.cardSection: ${Config.CARDS.contains("Cards.$rarity")}")
+            println("[Cards] generateCard.rarity: $rarity")
         }
-        return null
+
+        ConfigManager.reloadPluginConfig()
+
+        val cardSection = Config.CARDS.getConfigurationSection("Cards.$rarity")!!
+        val cardName = cardSection.getKeys(false).random()!!
+
+        return getCard(cardName, rarity, 1, getIsShiny(rarity, cardName))
     }
 }

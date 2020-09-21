@@ -1,186 +1,257 @@
 package it.forgottenworld.tradingcards.util
 
-import it.forgottenworld.tradingcards.TradingCards
+import it.forgottenworld.tradingcards.config.Config
+import it.forgottenworld.tradingcards.config.ConfigManager
 import org.apache.commons.lang.WordUtils
 import org.apache.commons.lang3.StringUtils
 import org.bukkit.ChatColor
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import java.util.*
 import kotlin.math.max
 
-class Utils(val tradingCards: TradingCards) {
-
-    private var hostileMobs: Set<EntityType> = setOf(EntityType.SPIDER, EntityType.ZOMBIE, EntityType.SKELETON, EntityType.CREEPER, EntityType.BLAZE, EntityType.SILVERFISH, EntityType.GHAST, EntityType.SLIME, EntityType.GUARDIAN, EntityType.MAGMA_CUBE, EntityType.WITCH, EntityType.ENDERMITE)
-    private var neutralMobs: Set<EntityType> = setOf(EntityType.ENDERMAN, EntityType.PIGLIN, EntityType.WOLF, EntityType.SNOWMAN, EntityType.IRON_GOLEM)
-    private var passiveMobs: Set<EntityType> = setOf(EntityType.CHICKEN, EntityType.COW, EntityType.SQUID, EntityType.SHEEP, EntityType.PIG, EntityType.RABBIT, EntityType.VILLAGER, EntityType.BAT, EntityType.HORSE)
-    private var bossMobs: Set<EntityType> = setOf(EntityType.ENDER_DRAGON, EntityType.WITHER)
-
-    fun isMobHostile(e: EntityType): Boolean {
-        return hostileMobs.contains(e)
-    }
-
-    fun isMobNeutral(e: EntityType): Boolean {
-        return neutralMobs.contains(e)
-    }
-
-    fun isMobPassive(e: EntityType): Boolean {
-        return passiveMobs.contains(e)
-    }
-
-    fun isMobBoss(e: EntityType): Boolean {
-        return bossMobs.contains(e)
-    }
-
-    fun cMsg(message: String?): String {
-        return ChatColor.translateAlternateColorCodes('&', message!!)
-    }
-
-    fun wrapString(s: String?): List<String?> {
-        val parsedString = ChatColor.stripColor(s)
-        val addedString = WordUtils.wrap(parsedString, tradingCards.configManager.pluginConfig.config!!.getInt("General.Info-Line-Length", 25), "\n", true)
-        val splitString: Array<String> = addedString.split("\n").toTypedArray()
-        val finalArray: MutableList<String?> = mutableListOf()
-        var arrayOfString1: Array<String>
-        val j: Int = splitString.also { arrayOfString1 = it }.size
-        for (i in 0 until j) {
-            val ss = arrayOfString1[i]
-            println(ChatColor.getLastColors(ss))
-            finalArray.add(cMsg("&f &7- &f$ss"))
-        }
-        return finalArray
-    }
-
-    fun calculateRarity(e: EntityType, alwaysDrop: Boolean): String? {
-        val config = tradingCards.configManager.pluginConfig.config!!
-        val shouldItDrop = Random().nextInt(100) + 1
-        val type: String
-        if (config.getBoolean("General.Debug-Mode")) println("[Cards] shouldItDrop Num: $shouldItDrop")
-        when {
-            isMobHostile(e) -> {
-                type = if (!alwaysDrop) {
-                    if (shouldItDrop > config.getInt("Chances.Hostile-Chance")) return "None"
-                    "Hostile"
-                } else {
-                    "Hostile"
-                }
-            }
-            isMobNeutral(e) -> {
-                type = if (!alwaysDrop) {
-                    if (shouldItDrop > config.getInt("Chances.Neutral-Chance")) return "None"
-                    "Neutral"
-                } else {
-                    "Neutral"
-                }
-            }
-            isMobPassive(e) -> {
-                type = if (!alwaysDrop) {
-                    if (shouldItDrop > config.getInt("Chances.Passive-Chance")) return "None"
-                    "Passive"
-                } else {
-                    "Passive"
-                }
-            }
-            isMobBoss(e) -> {
-                if (!alwaysDrop) {
-                    if (shouldItDrop > config.getInt("Chances.Boss-Chance")) return "None"
-                }
-                type = "Boss"
-            }
-            else -> return "None"
-        }
-        val rarities = config.getConfigurationSection("Rarities")!!
-        val rarityKeys = rarities.getKeys(false)
-        val rarityChances: MutableMap<String?, Int?> = mutableMapOf()
-        val rarityIndexes: MutableMap<Int?, String?> = mutableMapOf()
-        var i = 0
-        var mini = 0
-        val random = Random().nextInt(100000) + 1
-        if (config.getBoolean("General.Debug-Mode")) println("[Cards] Random Card Num: $random")
-        if (config.getBoolean("General.Debug-Mode")) println("[Cards] Type: $type")
-        for (key in rarityKeys) {
-            rarityIndexes[i] = key
-            i++
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] $i, $key")
-            if (config.contains("Chances." + key + "." + StringUtils.capitalize(e.name)) && mini == 0) {
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] Mini: $i")
-                mini = i
-            }
-            val chance = config.getInt("Chances.$key.$type", -1)
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] Keys: $key, $chance, i=$i")
-            rarityChances[key] = chance
-        }
-        if (mini != 0) {
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] Mini: $mini")
-            if (config.getBoolean("General.Debug-Mode")) println("[Cards] i: $i")
-            while (i >= mini) {
-                i--
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] i: $i")
-                val chance = config.getInt("Chances." + rarityIndexes[i] + "." + StringUtils.capitalize(e.name), -1)
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] Chance: $chance")
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] Rarity: " + rarityIndexes[i])
-                if (chance > 0) {
-                    if (config.getBoolean("General.Debug-Mode")) println("[Cards] Chance > 0")
-                    if (random <= chance) {
-                        if (config.getBoolean("General.Debug-Mode")) println("[Cards] Random <= Chance")
-                        return rarityIndexes[i]
-                    }
-                }
-            }
-        } else {
-            while (i > 0) {
-                i--
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] Final loop iteration $i")
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] Iteration " + i + " in HashMap is: " + rarityIndexes[i] + ", " + config.getString(StringBuilder("Rarities.").append(rarityIndexes[i]).append(".Name").toString()))
-                val chance: Int = config.getInt("Chances." + rarityIndexes[i] + "." + type, -1)
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] " + config.getString(StringBuilder("Rarities.").append(rarityIndexes[i]).append(".Name").toString()) + "'s chance of dropping: " + chance + " out of 100,000")
-                if (config.getBoolean("General.Debug-Mode")) println("[Cards] The random number we're comparing that against is: $random")
-                if (chance > 0 &&
-                        random <= chance) {
-                    if (config.getBoolean("General.Debug-Mode")) println("[Cards] Yup, looks like $random is definitely lower than $chance!")
-                    if (config.getBoolean("General.Debug-Mode")) println("[Cards] Giving a " + config.getString(StringBuilder("Rarities.").append(rarityIndexes[i]).append(".Name").toString()) + " card.")
-                    return rarityIndexes[i]
-                }
-            }
-        }
-        return "None"
-    }
-
-    fun formatTitle(title: String): String {
-        val line = "&7[&foOo&7]&f____________________________________________________&7[&foOo&7]&f"
-        val pivot = line.length / 2
-        val center = "&7.< &3$title&7 >.&f"
-        var out: String = line.substring(0, max(0, pivot - center.length / 2))
-        out = out + center + line.substring(pivot + center.length / 2)
-        return out
-    }
-
-    fun isOnList(p: Player?): Boolean {
-        val config = tradingCards.configManager.pluginConfig.config!!
-        val playersOnList = config.getStringList("Blacklist.Players")
-        return playersOnList.contains(p!!.name)
-    }
-
-    fun addToList(p: Player) {
-        val config = tradingCards.configManager.pluginConfig.config!!
-        val playersOnList = config.getStringList("Blacklist.Players")
-        playersOnList.add(p.name)
-        config["Blacklist.Players"] = null
-        config["Blacklist.Players"] = playersOnList
-        tradingCards.configManager.pluginConfig.save()
-    }
-
-    fun removeFromList(p: Player) {
-        val config = tradingCards.configManager.pluginConfig.config!!
-        val playersOnList = config.getStringList("Blacklist.Players")
-        playersOnList.remove(p.name)
-        config["Blacklist.Players"] = null
-        config["Blacklist.Players"] = playersOnList
-        tradingCards.configManager.pluginConfig.save()
-    }
-
-    fun blacklistMode(): Char {
-        val config = tradingCards.configManager.pluginConfig.config!!
-        return if (config.getBoolean("Blacklist.Whitelist-Mode")) 'w' else 'b'
-    }
+fun tcMsg(sender: CommandSender, message: String) {
+    sender.sendMessage(cMsg("${Config.MESSAGES.getString("Messages.Prefix")} $message"))
 }
+
+fun printDebug(msg: String) {
+    if (Config.DEBUG) println(msg)
+}
+
+private val hostileMobs = setOf(
+        EntityType.ZOMBIE,
+        EntityType.SKELETON,
+        EntityType.CREEPER,
+        EntityType.BLAZE,
+        EntityType.SILVERFISH,
+        EntityType.GHAST,
+        EntityType.SLIME,
+        EntityType.GUARDIAN,
+        EntityType.MAGMA_CUBE,
+        EntityType.WITCH,
+        EntityType.DROWNED,
+        EntityType.ENDERMITE,
+        EntityType.ELDER_GUARDIAN,
+        EntityType.ENDERMITE,
+        EntityType.EVOKER,
+        EntityType.HOGLIN,
+        EntityType.HUSK,
+        EntityType.PHANTOM,
+        EntityType.PIGLIN_BRUTE,
+        EntityType.PILLAGER,
+        EntityType.RAVAGER,
+        EntityType.STRAY,
+        EntityType.VEX,
+        EntityType.VINDICATOR,
+        EntityType.WITHER_SKELETON,
+        EntityType.ZOGLIN,
+        EntityType.ZOMBIE_VILLAGER
+)
+private val neutralMobs = setOf(
+        EntityType.ENDERMAN,
+        EntityType.BEE,
+        EntityType.CAVE_SPIDER,
+        EntityType.DOLPHIN,
+        EntityType.PIGLIN,
+        EntityType.WOLF,
+        EntityType.ZOMBIFIED_PIGLIN,
+        EntityType.SPIDER,
+        EntityType.PUFFERFISH,
+        EntityType.POLAR_BEAR,
+        EntityType.PANDA,
+        EntityType.SNOWMAN,
+        EntityType.LLAMA,
+        EntityType.IRON_GOLEM
+)
+private val passiveMobs = setOf(
+        EntityType.CHICKEN,
+        EntityType.FOX,
+        EntityType.DONKEY,
+        EntityType.SALMON,
+        EntityType.SKELETON_HORSE,
+        EntityType.SNOWMAN,
+        EntityType.STRIDER,
+        EntityType.TROPICAL_FISH,
+        EntityType.TURTLE,
+        EntityType.WANDERING_TRADER,
+        EntityType.PARROT,
+        EntityType.OCELOT,
+        EntityType.MUSHROOM_COW,
+        EntityType.MULE,
+        EntityType.COW,
+        EntityType.COD,
+        EntityType.SQUID,
+        EntityType.SHEEP,
+        EntityType.CAT,
+        EntityType.PIG,
+        EntityType.RABBIT,
+        EntityType.VILLAGER,
+        EntityType.BAT,
+        EntityType.HORSE
+)
+private var bossMobs: Set<EntityType> = setOf(
+        EntityType.ENDER_DRAGON,
+        EntityType.WITHER
+)
+
+private fun isMobHostile(e: EntityType) = hostileMobs.contains(e)
+
+private fun isMobNeutral(e: EntityType) = neutralMobs.contains(e)
+
+private fun isMobPassive(e: EntityType) = passiveMobs.contains(e)
+
+fun isMobBoss(e: EntityType) = bossMobs.contains(e)
+
+fun cMsg(message: String) = ChatColor.translateAlternateColorCodes('&', message)
+
+fun wrapString(s: String): Collection<String> =
+        WordUtils.wrap(
+                ChatColor.stripColor(s),
+                Config.PLUGIN.getInt("General.Info-Line-Length", 25),
+                "\n",
+                true
+        ).split("\n").map {
+            println(ChatColor.getLastColors(it))
+            cMsg("&f &7- &f$it")
+        }
+
+fun calculateRarity(e: EntityType, alwaysDrop: Boolean): String {
+
+    val config = Config.PLUGIN
+    val debug = Config.DEBUG
+
+    val shouldItDrop = Random().nextInt(100) + 1
+    printDebug("[Cards] shouldItDrop Num: $shouldItDrop")
+
+    val type = when {
+        isMobHostile(e) -> {
+            if (!alwaysDrop && shouldItDrop > config.getInt("Chances.Hostile-Chance")) return "None"
+            "Hostile"
+        }
+        isMobNeutral(e) -> {
+            if (!alwaysDrop && shouldItDrop > config.getInt("Chances.Neutral-Chance")) return "None"
+            "Neutral"
+        }
+        isMobPassive(e) -> {
+            if (!alwaysDrop && shouldItDrop > config.getInt("Chances.Passive-Chance")) return "None"
+            "Passive"
+        }
+        isMobBoss(e) -> {
+            if (!alwaysDrop && shouldItDrop > config.getInt("Chances.Boss-Chance")) return "None"
+            "Boss"
+        }
+        else -> return "None"
+    }
+
+    val rarityKeys = config.getConfigurationSection("Rarities")?.getKeys(false) ?: return "None"
+    val rarityIndexes: MutableMap<Int, String> = mutableMapOf()
+    var mini = 0
+    val random = Random().nextInt(100000) + 1
+
+    if (debug) {
+        println("[Cards] Random Card Num: $random")
+        println("[Cards] Type: $type")
+    }
+
+    //val rarityChances = rarityKeys.zip(rarityKeys.mapIndexed {i, key ->
+    rarityKeys.forEachIndexed {i, key ->
+
+        rarityIndexes[i] = key
+        printDebug("[Cards] $i, $key")
+
+        if (config.contains("Chances.$key.${StringUtils.capitalize(e.name)}") && mini == 0) {
+            printDebug("[Cards] Mini: $i")
+            mini = i
+        }
+
+        config.getInt("Chances.$key.$type", -1).also {
+            printDebug("[Cards] Keys: $key, $it, i=$i")
+        }
+    }
+    //).toMap()
+
+
+    var i = rarityKeys.size
+    if (mini != 0) {
+
+        if (debug) {
+            println("[Cards] Mini: $mini")
+            println("[Cards] i: $i")
+        }
+
+        while (i-- >= mini) {
+
+            val chance = config.getInt("Chances.${rarityIndexes[i]}.${StringUtils.capitalize(e.name)}", -1)
+
+            if (debug) {
+                println("[Cards] i: $i")
+                println("[Cards] Chance: $chance")
+                println("[Cards] Rarity: ${rarityIndexes[i]}")
+            }
+
+            if (chance > 0) {
+                if (debug) println("[Cards] Chance > 0")
+                if (random <= chance) {
+                    printDebug("[Cards] Random <= Chance")
+                    return rarityIndexes[i] ?: "None"
+                }
+            }
+
+        }
+
+    } else {
+        while (i-- > 0) {
+
+            val chance = config.getInt("Chances.${rarityIndexes[i]}.$type", -1)
+
+            if (debug) {
+                println("[Cards] Final loop iteration $i")
+                println("[Cards] Iteration $i in HashMap is: ${rarityIndexes[i]}, ${config.getString("Rarities.${rarityIndexes[i]}.Name")}")
+                println("[Cards] ${config.getString("Rarities.${rarityIndexes[i]}.Name")}'s chance of dropping: $chance out of 100,000")
+                println("[Cards] The random number we're comparing that against is: $random")
+            }
+
+            if (chance > 0 && random <= chance) {
+                if (debug) {
+                    println("[Cards] Yup, looks like $random is definitely lower than $chance!")
+                    println("[Cards] Giving a ${config.getString("Rarities.${rarityIndexes[i]}.Name")} card.")
+                }
+                return rarityIndexes[i] ?: "None"
+            }
+
+        }
+    }
+    return "None"
+}
+
+fun formatTitle(title: String): String {
+    val line = "&7[&foOo&7]&f____________________________________________________&7[&foOo&7]&f"
+    val pivot = line.length / 2
+    val center = "&7.< &3$title&7 >.&f"
+    return line.substring(0, max(0, pivot - center.length / 2)) +
+            center +
+            line.substring(pivot + center.length / 2)
+}
+
+fun isOnList(p: Player) =
+        Config.PLUGIN.getStringList("Blacklist.Players").contains(p.name)
+
+fun addToList(p: Player) {
+    val config = Config.PLUGIN
+    config["Blacklist.Players"] = config.getStringList("Blacklist.Players").apply {
+        add(p.name)
+    }
+    ConfigManager.pluginConfig.save()
+}
+
+fun removeFromList(p: Player) {
+    val config = Config.PLUGIN
+    config["Blacklist.Players"] = config.getStringList("Blacklist.Players").apply {
+        remove(p.name)
+    }
+    ConfigManager.pluginConfig.save()
+}
+
+fun blacklistMode() =
+    if (Config.PLUGIN.getBoolean("Blacklist.Whitelist-Mode")) 'w' else 'b'

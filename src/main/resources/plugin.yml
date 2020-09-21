@@ -1,6 +1,7 @@
 name: FWTradingCards
 main: it.forgottenworld.tradingcards.TradingCards
-version: "1.2.0"
+api-version: "1.16"
+version: "1.0"
 softdepend: [Vault]
 
 commands:

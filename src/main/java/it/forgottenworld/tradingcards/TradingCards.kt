@@ -1,13 +1,10 @@
 package it.forgottenworld.tradingcards
 
-import it.forgottenworld.tradingcards.card.CardManager
 import it.forgottenworld.tradingcards.commands.DefaultCommand
-import it.forgottenworld.tradingcards.config.ConfigManager
-import it.forgottenworld.tradingcards.deck.DeckManager
+import it.forgottenworld.tradingcards.config.Config
 import it.forgottenworld.tradingcards.listeners.EntityListener
 import it.forgottenworld.tradingcards.listeners.PlayerListener
 import it.forgottenworld.tradingcards.task.Task
-import it.forgottenworld.tradingcards.util.Utils
 import net.milkbowl.vault.chat.Chat
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.NamespacedKey
@@ -17,28 +14,34 @@ import org.bukkit.plugin.java.JavaPlugin
 class TradingCards : JavaPlugin() {
 
     var hasVault = false
-    var permRarities = Permission("fwtc.rarity")
-    var econ: Economy? = null
-    var perms: Permission? = null
-    var chat: Chat? = null
-    lateinit var configManager: ConfigManager
-    lateinit var cardManager: CardManager
-    lateinit var deckManager: DeckManager
-    lateinit var nameSpacedKey: NamespacedKey
+
     lateinit var task: Task
-    lateinit var utils: Utils
 
     override fun onEnable() {
         try {
-            utils = Utils(this)
+
+            instance = this
             nameSpacedKey = NamespacedKey(this,"uncraftable")
-            configManager = ConfigManager(this)
-            deckManager = DeckManager(this)
-            cardManager = CardManager(this)
-            loadConfig()
-            registerEvents()
-            registerCommands()
-            registerPermissions()
+
+            server.pluginManager.addPermission(permRarities)
+            server.pluginManager.registerEvents(PlayerListener(), this)
+            server.pluginManager.registerEvents(EntityListener(), this)
+
+            getCommand("fwtc")?.setExecutor(DefaultCommand())
+
+            if (Config.PLUGIN.getBoolean("PluginSupport.Vault.Vault-Enabled"))
+                println(
+                        if (setupEconomy())
+                            "[FWTradingCards] Vault hook successful!"
+                        else
+                            "[FWTradingCards] Vault not found, hook unsuccessful!"
+                )
+
+            if (Config.PLUGIN.getBoolean("General.Schedule-Cards")) {
+                task = Task()
+                task.startTimer()
+            }
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -51,40 +54,20 @@ class TradingCards : JavaPlugin() {
         server.pluginManager.removePermission(permRarities)
     }
 
-    private fun setupEconomy() {
-        if (server.pluginManager.getPlugin("Vault") == null) {
-            return
-        }
-        val rsp = server.servicesManager.getRegistration(Economy::class.java) ?: return
-        econ = rsp.provider
+    private fun setupEconomy(): Boolean {
+        server.pluginManager.getPlugin("Vault") ?: return false
+        econ = server.servicesManager.getRegistration(Economy::class.java)?.provider ?: return false
+        hasVault = true
+        return true
     }
 
-    private fun loadConfig(){
-        if (configManager.pluginConfig.config?.getBoolean("PluginSupport.Vault.Vault-Enabled")!!) {
-            if (server.pluginManager.getPlugin("Vault") != null) {
-                setupEconomy()
-                println("[FWTradingCards] Vault hook successful!")
-                hasVault = true
-            } else {
-                println("[FWTradingCards] Vault not found, hook unsuccessful!")
-            }
-        }
-        if (configManager.pluginConfig.config?.getBoolean("General.Schedule-Cards")!!) {
-            task = Task(this)
-            task.startTimer()
-        }
-    }
+    companion object {
+        var permRarities = Permission("fwtc.rarity")
+        var econ: Economy? = null
+        var perms: Permission? = null
+        var chat: Chat? = null
 
-    private fun registerEvents(){
-        server.pluginManager.registerEvents(PlayerListener(this), this)
-        server.pluginManager.registerEvents(EntityListener(this), this)
-    }
-
-    private fun registerCommands(){
-        getCommand("fwtc")?.setExecutor(DefaultCommand(this))
-    }
-
-    private fun registerPermissions(){
-        server.pluginManager.addPermission(permRarities)
+        lateinit var instance: TradingCards
+        lateinit var nameSpacedKey: NamespacedKey
     }
 }

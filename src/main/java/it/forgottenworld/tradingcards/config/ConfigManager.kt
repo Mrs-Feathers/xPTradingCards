@@ -2,7 +2,7 @@ package it.forgottenworld.tradingcards.config
 
 import it.forgottenworld.tradingcards.TradingCards
 
-class ConfigManager(val tradingCards: TradingCards) {
+object ConfigManager {
 
     lateinit var pluginConfig: Config
         private set
@@ -24,19 +24,19 @@ class ConfigManager(val tradingCards: TradingCards) {
         reloadCardsConfig()
     }
 
-    fun reloadPluginConfig(){
-        pluginConfig = Config("config.yml", tradingCards)
+    fun reloadPluginConfig() {
+        pluginConfig = Config("config.yml", TradingCards.instance)
     }
 
-    fun reloadDecksConfig() {
-        decksConfig = Config("decks.yml", tradingCards);
+    private fun reloadDecksConfig() {
+        decksConfig = Config("decks.yml", TradingCards.instance)
     }
 
-    fun reloadMessagesConfig(){
-        messagesConfig = Config("messages.yml", tradingCards)
+    private fun reloadMessagesConfig() {
+        messagesConfig = Config("messages.yml", TradingCards.instance)
     }
 
-    fun reloadCardsConfig(){
-        cardsConfig = Config("cards.yml", tradingCards)
+    fun reloadCardsConfig() {
+        cardsConfig = Config("cards.yml", TradingCards.instance)
     }
 }
