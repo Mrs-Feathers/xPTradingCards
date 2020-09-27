@@ -197,10 +197,10 @@ object CardManager {
                         cleanedArray.size > 2 && cleanedArray.drop(1).joinToString("_").matches(regex) ||
                         cleanedArray[0].matches(regex) ||
                         cleanedArray[1].matches(regex)
-                /*if (cleanedArray.size > 2 && ("${cleanedArray[1]}_${cleanedArray[2]}").matches(regex)) return s
+                if (cleanedArray.size > 2 && ("${cleanedArray[1]}_${cleanedArray[2]}").matches(regex)) return s
                 if (cleanedArray.size > 3 && ("${cleanedArray[1]}_${cleanedArray[2]}_${cleanedArray[3]}").matches(regex)) return s
                 if (cleanedArray.size > 4 && ("${cleanedArray[1]}_${cleanedArray[2]}_${cleanedArray[3]}_${cleanedArray[4]}").matches(Regex(".*\\b$s\\b.*"))) return s
-                if (cleanedArray.size > 5 && ("${cleanedArray[1]}_${cleanedArray[2]}_${cleanedArray[3]}_${cleanedArray[4]}_${cleanedArray[5]}").matches(Regex(".*\\b$s\\b.*"))) return s*/
+                if (cleanedArray.size > 5 && ("${cleanedArray[1]}_${cleanedArray[2]}_${cleanedArray[3]}_${cleanedArray[4]}_${cleanedArray[5]}").matches(Regex(".*\\b$s\\b.*"))) return s
             } else cleanedArray[0].matches(regex)
             
             false
