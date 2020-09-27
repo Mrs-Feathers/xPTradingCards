@@ -54,7 +54,7 @@ object CardManager {
                 .replaceFirst("%COLOUR%", crd.rarityColor)
                 .replaceFirst("%NAME%", cardName)
                 .replaceFirst("%COST%", crd.cost)
-                .replaceFirst("_", " ")
+                .replace("_", " ")
                 .replaceFirst("%SHINYPREFIX%", shinyPrefix)))
         card.itemMeta = meta
     }
