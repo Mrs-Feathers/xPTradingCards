@@ -53,12 +53,14 @@ object CardManager {
                 .replace("%NAME%", cardName)
                 .replace("%COST%", crd.cost)
                 .replace("_", " "))
-                .let { if (isShiny) it.replace("%SHINYPREFIX%", shinyPrefix) else it })
+                .let { if (isShiny) it.replace("%SHINYPREFIX%", shinyPrefix) else it.replace("%SHINYPREFIX%","") })
+        card.itemMeta = cmeta
     }
 
     private fun setLore(card: ItemStack, crd: Card, cardName: String, isShiny: Boolean, rarity: String) {
         val config = Config.PLUGIN
-        card.itemMeta?.lore = mutableListOf(cMsg("${crd.typeColour}${crd.typeDisplay}: &f${crd.type}")).apply {
+        val itemMeta = card.itemMeta
+        itemMeta?.lore = mutableListOf(cMsg("${crd.typeColour}${crd.typeDisplay}: &f${crd.type}")).apply {
 
             if (crd.info == "None" || crd.info == "")
                 add(cMsg("${crd.infoColor}${crd.infoDisplay}: &f${crd.info}"))
@@ -77,10 +79,11 @@ object CardManager {
         }
 
         if (config.getBoolean("General.Hide-Enchants", true))
-            card.itemMeta?.addItemFlags(ItemFlag.HIDE_ENCHANTS)
+            itemMeta?.addItemFlags(ItemFlag.HIDE_ENCHANTS)
 
         if (isShiny)
             card.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, 10)
+        card.itemMeta = itemMeta
     }
 
     private fun getBlankCard(quantity: Int) =

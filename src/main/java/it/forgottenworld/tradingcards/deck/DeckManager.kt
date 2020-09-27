@@ -28,23 +28,23 @@ object DeckManager {
         }
 
     fun createDeck(p: Player, num: Int) =
-        blankDeck.apply {
-            val deckMeta = itemMeta!!
-            deckMeta.setDisplayName(cMsg("${config.getString("General.Deck-Prefix")}${p.name}'s Deck #$num"))
+            blankDeck.apply {
+                val deckMeta = itemMeta!!
+                deckMeta.setDisplayName(cMsg("${config.getString("General.Deck-Prefix")}${p.name}'s Deck #$num"))
 
-            if (config.getBoolean("General.Hide-Enchants", true))
-                deckMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
+                if (config.getBoolean("General.Hide-Enchants", true))
+                    deckMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
 
-            itemMeta = deckMeta
-            addUnsafeEnchantment(Enchantment.DURABILITY, 10)
-        }
+                itemMeta = deckMeta
+                addUnsafeEnchantment(Enchantment.DURABILITY, 10)
+            }
 
     fun hasDeck(p: Player, num: Int) =
-        p.inventory.filterNotNull().any {
-            it.type == Material.valueOf(config.getString("General.Deck-Material")!!) &&
-            it.getEnchantmentLevel(Enchantment.DURABILITY) == 10 &&
-            num == it.itemMeta!!.displayName.split("#")[1].toInt()
-        }
+            p.inventory.filterNotNull().any {
+                it.type == Material.valueOf(config.getString("General.Deck-Material")!!) &&
+                        it.getEnchantmentLevel(Enchantment.DURABILITY) == 10 &&
+                        num == it.itemMeta!!.displayName.split("#")[1].toInt()
+            }
 
     fun openDeck(p: Player, deckNum: Int) {
         val cardsConfig = Config.CARDS
@@ -127,7 +127,8 @@ object DeckManager {
 
         val specialCardColour = config.getString("Colours.BoosterPackSpecialCards")!!
 
-        boosterPack.itemMeta?.apply {
+        val itemMeta = boosterPack.itemMeta
+        itemMeta?.apply {
 
             setDisplayName(cMsg("$prefix$nameColour${name.replace("_", " ")}"))
 
@@ -141,6 +142,7 @@ object DeckManager {
                 addItemFlags(ItemFlag.HIDE_ENCHANTS)
 
         }
+        boosterPack.itemMeta = itemMeta
 
         return boosterPack.apply { addUnsafeEnchantment(Enchantment.ARROW_INFINITE, 10) }
     }
