@@ -62,7 +62,7 @@ class PlayerListener : Listener {
 
                     val lore = it.itemMeta!!.lore
                     val shinyPrefix = Config.PLUGIN.getString("General.Shiny-Name")!!
-                    val rarity = ChatColor.stripColor(lore!![lore.size - 1])!!.replace("$shinyPrefix ", "")
+                    val rarity = ChatColor.stripColor(lore!![lore.size - 1])!!.replaceFirst("$shinyPrefix ", "")
                     val card = CardManager.getCardName(rarity, it.itemMeta!!.displayName)
                     val amount = it.amount.toString()
                     val shiny = if (it.containsEnchantment(Enchantment.ARROW_INFINITE)) "yes" else "no"

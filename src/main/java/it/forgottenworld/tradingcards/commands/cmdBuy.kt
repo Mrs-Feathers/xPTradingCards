@@ -50,7 +50,7 @@ fun cmdBuyCard(cardsConfig: FileConfiguration, args: Array<String>, sender: Comm
 
     tcMsg(sender,
             messagesConfig.getString("Messages.BoughtCard")!!
-                    .replace("%amount%", buyPrice.toString()))
+                    .replaceFirst("%amount%", buyPrice.toString()))
 
     return true
 }
@@ -94,7 +94,7 @@ fun cmdBuyPack(config: FileConfiguration, args: Array<String>, sender: CommandSe
     else if (p.gameMode == GameMode.SURVIVAL)
         p.world.dropItem(p.location, DeckManager.createBoosterPack(args[2]))
 
-    tcMsg(sender, messagesConfig.getString("Messages.BoughtCard")!!.replace("%amount%", buyPrice.toString()))
+    tcMsg(sender, messagesConfig.getString("Messages.BoughtCard")!!.replaceFirst("%amount%", buyPrice.toString()))
     return true
 }
 

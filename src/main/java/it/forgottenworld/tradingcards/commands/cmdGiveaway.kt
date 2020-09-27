@@ -27,8 +27,8 @@ fun cmdGiveaway(sender: CommandSender, args: Array<String>, cardsConfig: FileCon
     Bukkit.broadcastMessage(cMsg(
             "${messagesConfig.getString("Messages.Prefix")} ${
                 messagesConfig.getString("Messages.Giveaway")!!
-                        .replace("%player%", sender.name)
-                        .replace("%rarity%", keyToUse)
+                        .replaceFirst("%player%", sender.name)
+                        .replaceFirst("%rarity%", keyToUse)
             }"))
 
     val cardKeys = cardsConfig.getConfigurationSection("Cards.$keyToUse")!!.getKeys(false).toList()

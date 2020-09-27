@@ -51,7 +51,7 @@ fun cmdWorth(p: Player, config: FileConfiguration, cardsConfig: FileConfiguratio
     }
 
     if (canBuy)
-        tcMsg(p, messagesConfig.getString("Messages.CanBuy")!!.replace("%buyAmount%", buyPrice.toString()))
+        tcMsg(p, messagesConfig.getString("Messages.CanBuy")!!.replaceFirst("%buyAmount%", buyPrice.toString()))
     else
         tcMsg(p, "${messagesConfig.getString("Messages.CanNotBuy")}")
 

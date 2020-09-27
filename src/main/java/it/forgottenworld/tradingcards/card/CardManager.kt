@@ -48,12 +48,12 @@ object CardManager {
         val shinyPrefix = if (isShiny) config.getString("General.Shiny-Name") ?: "" else ""
         meta.setDisplayName(cMsg(config.getString(
                 "DisplayNames.Cards.ShinyTitle")!!
-                .replace("%PREFIX%", crd.prefix)
-                .replace("%COLOUR%", crd.rarityColor)
-                .replace("%NAME%", cardName)
-                .replace("%COST%", crd.cost)
-                .replace("_", " ")
-                .replace("%SHINYPREFIX%", shinyPrefix)))
+                .replaceFirst("%PREFIX%", crd.prefix)
+                .replaceFirst("%COLOUR%", crd.rarityColor)
+                .replaceFirst("%NAME%", cardName)
+                .replaceFirst("%COST%", crd.cost)
+                .replaceFirst("_", " ")
+                .replaceFirst("%SHINYPREFIX%", shinyPrefix)))
         card.itemMeta = meta
     }
 
@@ -147,8 +147,8 @@ object CardManager {
         ConfigManager.reloadCardsConfig()
         creator.sendMessage(cMsg(
                 "${Config.CARDS.getString("Messages.Prefix")} ${Config.CARDS.getString("Messages.CreateSuccess")!!
-                        .replace("%name%", name)
-                        .replace("%rarity%", rarity)}"))
+                        .replaceFirst("%name%", name)
+                        .replaceFirst("%rarity%", rarity)}"))
 
     }
 

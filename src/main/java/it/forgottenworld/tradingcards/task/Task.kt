@@ -28,7 +28,7 @@ class Task {
 
         messagesConfig
                 .getString("Messages.TimerMessage")
-                ?.replace("%hour%", hours.toString())
+                ?.replaceFirst("%hour%", hours.toString())
                 ?.let {
                     Bukkit.broadcastMessage(cMsg("${messagesConfig.getString("Messages.Prefix")} $it"))
                 }

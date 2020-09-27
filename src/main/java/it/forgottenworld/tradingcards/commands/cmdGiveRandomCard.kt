@@ -30,7 +30,7 @@ fun cmdGiveRandomCard(sender: CommandSender, args: Array<String>, messagesConfig
         val rare = calculateRarity(EntityType.valueOf(args[1].toUpperCase()), true)
 
         printDebug("[Cards] onCommand.rare: $rare")
-        tcMsg(sender, messagesConfig.getString("Messages.GiveRandomCardMsg")!!.replace("%player%", p!!.name))
+        tcMsg(sender, messagesConfig.getString("Messages.GiveRandomCardMsg")!!.replaceFirst("%player%", p!!.name))
 
         if (p.inventory.firstEmpty() != -1) {
 
