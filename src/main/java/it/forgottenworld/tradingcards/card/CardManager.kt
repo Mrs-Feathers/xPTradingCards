@@ -43,24 +43,25 @@ object CardManager {
     }
 
     private fun setDisplayName(card: ItemStack, crd: Card, cardName: String, isShiny: Boolean) {
+        val meta = card.itemMeta ?: return
         val config = Config.PLUGIN
-        val cmeta = card.itemMeta
-        val shinyPrefix = config.getString("General.Shiny-Name")!!
-        cmeta?.setDisplayName(cMsg(config.getString(
+        val shinyPrefix = if (isShiny) config.getString("General.Shiny-Name") ?: "" else ""
+        meta.setDisplayName(cMsg(config.getString(
                 "DisplayNames.Cards.ShinyTitle")!!
                 .replace("%PREFIX%", crd.prefix)
                 .replace("%COLOUR%", crd.rarityColor)
                 .replace("%NAME%", cardName)
                 .replace("%COST%", crd.cost)
-                .replace("_", " "))
-                .let { if (isShiny) it.replace("%SHINYPREFIX%", shinyPrefix) else it.replace("%SHINYPREFIX%","") })
-        card.itemMeta = cmeta
+                .replace("_", " ")
+                .replace("%SHINYPREFIX%", shinyPrefix)))
+        card.itemMeta = meta
     }
 
     private fun setLore(card: ItemStack, crd: Card, cardName: String, isShiny: Boolean, rarity: String) {
+        val itemMeta = card.itemMeta ?: return
         val config = Config.PLUGIN
-        val itemMeta = card.itemMeta
-        itemMeta?.lore = mutableListOf(cMsg("${crd.typeColour}${crd.typeDisplay}: &f${crd.type}")).apply {
+
+        itemMeta.lore = mutableListOf(cMsg("${crd.typeColour}${crd.typeDisplay}: &f${crd.type}")).apply {
 
             if (crd.info == "None" || crd.info == "")
                 add(cMsg("${crd.infoColor}${crd.infoDisplay}: &f${crd.info}"))
@@ -79,16 +80,19 @@ object CardManager {
         }
 
         if (config.getBoolean("General.Hide-Enchants", true))
-            itemMeta?.addItemFlags(ItemFlag.HIDE_ENCHANTS)
+            itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
 
         if (isShiny)
             card.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, 10)
+
         card.itemMeta = itemMeta
     }
 
     private fun getBlankCard(quantity: Int) =
             ItemStack(Material.getMaterial(Config.PLUGIN.getString("General.Card-Material")!!)!!, quantity).apply {
-                itemMeta?.persistentDataContainer?.set(TradingCards.nameSpacedKey, PersistentDataType.BYTE,1)
+                val meta = itemMeta
+                meta?.persistentDataContainer?.set(TradingCards.nameSpacedKey, PersistentDataType.BYTE,1)
+                meta?.let { itemMeta = it }
             }
 
     private fun getIsShiny(rarity: String, cardName: String) =
@@ -156,7 +160,22 @@ object CardManager {
         val prefix = if (hasPrefix) ChatColor.stripColor(config.getString("General.Card-Prefix")) ?: "" else ""
         val shinyPrefix = config.getString("General.Shiny-Name")!!
 
+        val serializedCardName =
+                (ChatColor.stripColor(display) ?: return "None")
+                        .let {
+                            if (hasPrefix) it.replaceFirst(prefix, "")
+                            else it
+                        }.replaceFirst("$shinyPrefix ", "")
+                        .replace(" ", "_")
+
+        return if (Config.CARDS.contains("Cards.$rarity.$serializedCardName")) serializedCardName
+        else "None"
+
+
+        /* FATHER FORGIVE THEM FOR THEY DO NOT KNOW WHAT THEY DO
+
         val cleanedArray = ChatColor.stripColor(display)!!.let {
+
             if (hasPrefix)
                 it.replace(prefix, "")
             else
@@ -185,7 +204,7 @@ object CardManager {
             } else cleanedArray[0].matches(regex)
             
             false
-        } ?: "None"
+        } ?: "None"*/
 
     }
 

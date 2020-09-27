@@ -19,12 +19,16 @@ object DeckManager {
 
     private val blankDeck
         get() = ItemStack(Material.getMaterial(config.getString("General.Deck-Material")!!)!!).apply {
-            itemMeta?.persistentDataContainer?.set(TradingCards.nameSpacedKey, PersistentDataType.BYTE, 1)
+            val meta = itemMeta
+            meta?.persistentDataContainer?.set(TradingCards.nameSpacedKey, PersistentDataType.BYTE, 1)
+            meta?.let { itemMeta = it }
         }
 
     private val blankBoosterPack
         get() = ItemStack(Material.getMaterial(config.getString("General.BoosterPack-Material")!!)!!).apply {
-            itemMeta?.persistentDataContainer?.set(TradingCards.nameSpacedKey, PersistentDataType.BYTE, 1)
+            val meta = itemMeta
+            meta?.persistentDataContainer?.set(TradingCards.nameSpacedKey, PersistentDataType.BYTE, 1)
+            itemMeta = meta
         }
 
     fun createDeck(p: Player, num: Int) =
