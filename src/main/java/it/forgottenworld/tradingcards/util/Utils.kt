@@ -2,6 +2,7 @@ package it.forgottenworld.tradingcards.util
 
 import it.forgottenworld.tradingcards.config.Config
 import it.forgottenworld.tradingcards.config.ConfigManager
+import it.forgottenworld.tradingcards.config.Messages
 import org.apache.commons.lang.WordUtils
 import org.apache.commons.lang3.StringUtils
 import org.bukkit.ChatColor
@@ -12,7 +13,7 @@ import java.util.*
 import kotlin.math.max
 
 fun tcMsg(sender: CommandSender, message: String) {
-    sender.sendMessage(cMsg("${Config.MESSAGES.getString("Messages.Prefix")} $message"))
+    sender.sendMessage(cMsg("${Messages.Prefix} $message"))
 }
 
 fun printDebug(msg: String) {

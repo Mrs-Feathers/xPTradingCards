@@ -2,6 +2,7 @@ package it.forgottenworld.tradingcards
 
 import it.forgottenworld.tradingcards.commands.DefaultCommand
 import it.forgottenworld.tradingcards.config.Config
+import it.forgottenworld.tradingcards.config.Messages
 import it.forgottenworld.tradingcards.listeners.EntityListener
 import it.forgottenworld.tradingcards.listeners.PlayerListener
 import it.forgottenworld.tradingcards.task.Task
@@ -28,6 +29,8 @@ class TradingCards : JavaPlugin() {
             server.pluginManager.registerEvents(EntityListener(), this)
 
             getCommand("fwtc")?.setExecutor(DefaultCommand())
+
+            Messages.load()
 
             if (Config.PLUGIN.getBoolean("PluginSupport.Vault.Vault-Enabled"))
                 println(

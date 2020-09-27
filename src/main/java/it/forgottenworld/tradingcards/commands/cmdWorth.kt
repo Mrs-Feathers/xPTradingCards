@@ -2,26 +2,27 @@ package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.config.Config
+import it.forgottenworld.tradingcards.config.Messages
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
 
-fun cmdWorth(p: Player, config: FileConfiguration, cardsConfig: FileConfiguration, messagesConfig: FileConfiguration): Boolean {
+fun cmdWorth(p: Player, config: FileConfiguration, cardsConfig: FileConfiguration): Boolean {
 
     if (!p.hasPermission("fwtc.worth")) {
-        tcMsg(p, "${messagesConfig.getString("Messages.NoPerms")}")
+        tcMsg(p, Messages.NoPerms)
         return true
     }
 
     if (!TradingCards.instance.hasVault) {
-        tcMsg(p, "${messagesConfig.getString("Messages.NoVault")}")
+        tcMsg(p, Messages.NoVault)
         return true
     }
 
     if (p.inventory.getItem(p.inventory.heldItemSlot)?.type != Material.valueOf(config.getString("General.Card-Material")!!)) {
-        tcMsg(p, "${messagesConfig.getString("Messages.NotACard")}")
+        tcMsg(p, Messages.NotACard)
         return true
     }
 
@@ -51,9 +52,9 @@ fun cmdWorth(p: Player, config: FileConfiguration, cardsConfig: FileConfiguratio
     }
 
     if (canBuy)
-        tcMsg(p, messagesConfig.getString("Messages.CanBuy")!!.replaceFirst("%buyAmount%", buyPrice.toString()))
+        tcMsg(p, Messages.CanBuy.replaceFirst("%buyAmount%", buyPrice.toString()))
     else
-        tcMsg(p, "${messagesConfig.getString("Messages.CanNotBuy")}")
+        tcMsg(p, Messages.CanNotBuy)
 
     return true
 }

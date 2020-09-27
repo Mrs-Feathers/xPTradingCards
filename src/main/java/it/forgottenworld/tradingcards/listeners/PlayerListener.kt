@@ -4,6 +4,7 @@ import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.card.CardManager
 import it.forgottenworld.tradingcards.config.Config
 import it.forgottenworld.tradingcards.config.ConfigManager
+import it.forgottenworld.tradingcards.config.Messages
 import it.forgottenworld.tradingcards.deck.DeckManager
 import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.printDebug
@@ -153,7 +154,7 @@ class PlayerListener : Listener {
             var extraCardAmount = 0
             if (hasExtra) extraCardAmount = ChatColor.stripColor(line3[0])!!.toInt()
 
-            p.sendMessage(cMsg("${Config.MESSAGES.getString("Messages.Prefix")} ${Config.MESSAGES.getString("Messages.OpenBoosterPack")}"))
+            p.sendMessage(cMsg("${Messages.Prefix} ${Messages.OpenBoosterPack}"))
 
             for (i in 0 until normalCardAmount) {
                 if (p.inventory.firstEmpty() != -1)

@@ -1,14 +1,17 @@
 package it.forgottenworld.tradingcards.commands
 
+import it.forgottenworld.tradingcards.config.Messages
 import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.apache.commons.lang3.StringUtils
 import org.bukkit.command.CommandSender
 import org.bukkit.configuration.file.FileConfiguration
 
-fun cmdList(sender: CommandSender, cardsConfig: FileConfiguration, messagesConfig: FileConfiguration): Boolean {
+fun cmdList(sender: CommandSender, cardsConfig: FileConfiguration): Boolean {
+
     if (!sender.hasPermission("fwtc.list")) {
-        tcMsg(sender, "${messagesConfig.getString("Messages.NoPerms")}"); return true
+        tcMsg(sender, Messages.NoPerms)
+        return true
     }
 
     for (key in cardsConfig.getConfigurationSection("Cards")!!.getKeys(false)) {

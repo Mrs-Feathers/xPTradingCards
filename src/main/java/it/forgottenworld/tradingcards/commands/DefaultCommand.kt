@@ -2,6 +2,7 @@ package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.config.Config
+import it.forgottenworld.tradingcards.config.Messages
 import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.formatTitle
 import it.forgottenworld.tradingcards.util.tcMsg
@@ -57,22 +58,22 @@ class DefaultCommand : CommandExecutor {
         }
 
         return when(args[0].toLowerCase()) {
-            "reload" -> cmdReload(sender, Config.PLUGIN, Config.MESSAGES)
-            "toggle" -> sender is Player && cmdToggle(sender, Config.MESSAGES)
-            "create" -> sender is Player && cmdCreate(sender, Config.MESSAGES, args)
-            "givecard" -> sender is Player && cmdGiveCard(sender, args, Config.CARDS, Config.MESSAGES)
-            "giveshinycard" -> sender is Player && cmdGiveShinyCard(sender, args, Config.CARDS, Config.MESSAGES)
-            "giveboosterpack" -> cmdGiveBoosterPack(sender, args, Config.MESSAGES)
-            "getdeck" -> sender is Player && cmdGetDeck(sender, args, Config.MESSAGES)
-            "giverandomcard" -> cmdGiveRandomCard(sender, args, Config.MESSAGES)
-            "list" -> cmdList(sender, Config.CARDS, Config.MESSAGES)
-            "listpacks" -> cmdListPacks(sender, Config.PLUGIN, Config.MESSAGES)
-            "giveaway"-> cmdGiveaway(sender, args, Config.CARDS, Config.MESSAGES)
-            "worth" -> sender is Player && cmdWorth(sender, Config.PLUGIN, Config.CARDS, Config.MESSAGES)
+            "reload" -> cmdReload(sender, Config.PLUGIN)
+            "toggle" -> sender is Player && cmdToggle(sender)
+            "create" -> sender is Player && cmdCreate(sender, args)
+            "givecard" -> sender is Player && cmdGiveCard(sender, args, Config.CARDS)
+            "giveshinycard" -> sender is Player && cmdGiveShinyCard(sender, args, Config.CARDS)
+            "giveboosterpack" -> cmdGiveBoosterPack(sender, args)
+            "getdeck" -> sender is Player && cmdGetDeck(sender, args)
+            "giverandomcard" -> cmdGiveRandomCard(sender, args)
+            "list" -> cmdList(sender, Config.CARDS)
+            "listpacks" -> cmdListPacks(sender, Config.PLUGIN)
+            "giveaway"-> cmdGiveaway(sender, args, Config.CARDS)
+            "worth" -> sender is Player && cmdWorth(sender, Config.PLUGIN, Config.CARDS)
             "credits" -> cmdCredits(sender)
-            "buy" -> sender is Player && cmdBuy(sender, args, Config.PLUGIN, Config.CARDS, Config.MESSAGES)
+            "buy" -> sender is Player && cmdBuy(sender, args, Config.PLUGIN, Config.CARDS)
             else -> { 
-                tcMsg(sender, "${Config.MESSAGES.getString("Messages.NoCmd")}")
+                tcMsg(sender, Messages.NoCmd)
                 true 
             }
         }

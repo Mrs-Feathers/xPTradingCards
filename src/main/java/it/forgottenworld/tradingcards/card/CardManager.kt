@@ -3,6 +3,7 @@ package it.forgottenworld.tradingcards.card
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.config.Config
 import it.forgottenworld.tradingcards.config.ConfigManager
+import it.forgottenworld.tradingcards.config.Messages
 import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.wrapString
 import org.bukkit.ChatColor
@@ -118,7 +119,7 @@ object CardManager {
     fun createCard(creator: Player, rarity: String, name: String, series: String, type: String, hasShiny: Boolean, info: String) {
 
         if (Config.CARDS.contains("Cards.$rarity.$name")) {
-            creator.sendMessage(cMsg("${Config.CARDS.getString("Messages.Prefix")} ${Config.CARDS.getString("Messages.CreateExists")}"))
+            creator.sendMessage(cMsg("${Messages.Prefix} ${Messages.CreateExists}"))
             return
         }
 
@@ -146,7 +147,7 @@ object CardManager {
         ConfigManager.cardsConfig.save()
         ConfigManager.reloadCardsConfig()
         creator.sendMessage(cMsg(
-                "${Config.CARDS.getString("Messages.Prefix")} ${Config.MESSAGES.getString("Messages.CreateSuccess")!!
+                "${Messages.Prefix} ${Messages.CreateSuccess
                         .replaceFirst("%name%", name)
                         .replaceFirst("%rarity%", rarity)}"))
 

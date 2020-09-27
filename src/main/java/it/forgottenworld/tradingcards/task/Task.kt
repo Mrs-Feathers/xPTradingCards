@@ -3,6 +3,7 @@ package it.forgottenworld.tradingcards.task
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.card.CardManager
 import it.forgottenworld.tradingcards.config.Config
+import it.forgottenworld.tradingcards.config.Messages
 import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.printDebug
 import org.bukkit.Bukkit
@@ -16,7 +17,6 @@ class Task {
 
         val config = Config.PLUGIN
         val cardsConfig = Config.CARDS
-        val messagesConfig = Config.MESSAGES
 
         val scheduler = Bukkit.getServer().scheduler
         if (scheduler.isQueued(taskid) || scheduler.isCurrentlyRunning(taskid)) {
@@ -26,12 +26,7 @@ class Task {
 
         val hours = config.getInt("General.Schedule-Card-Time-In-Hours").coerceAtLeast(1)
 
-        messagesConfig
-                .getString("Messages.TimerMessage")
-                ?.replaceFirst("%hour%", hours.toString())
-                ?.let {
-                    Bukkit.broadcastMessage(cMsg("${messagesConfig.getString("Messages.Prefix")} $it"))
-                }
+        Bukkit.broadcastMessage(cMsg("${Messages.Prefix} ${Messages.TimerMessage.replaceFirst("%hour%", hours.toString())}"))
 
         taskid = Bukkit.getServer().scheduler.scheduleSyncRepeatingTask(TradingCards.instance, {
 
@@ -51,9 +46,7 @@ class Task {
 
                 if (keyToUse.isEmpty()) {
 
-                    Bukkit.broadcastMessage(cMsg("${messagesConfig
-                            .getString("Messages.Prefix")} ${messagesConfig
-                            .getString("Messages.ScheduledGiveaway")}"))
+                    Bukkit.broadcastMessage(cMsg("${Messages.Prefix} ${Messages.ScheduledGiveaway}"))
 
                     for (p in Bukkit.getOnlinePlayers()) {
 

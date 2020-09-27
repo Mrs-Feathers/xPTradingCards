@@ -2,6 +2,7 @@ package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.card.CardManager
+import it.forgottenworld.tradingcards.config.Messages
 import it.forgottenworld.tradingcards.deck.DeckManager
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.Bukkit
@@ -11,11 +12,20 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
 import java.util.*
 
-fun cmdBuyCard(cardsConfig: FileConfiguration, args: Array<String>, sender: CommandSender, messagesConfig: FileConfiguration, p: Player, config: FileConfiguration): Boolean {
-    if (args.size <= 2) { tcMsg(sender, "${messagesConfig.getString("Messages.ChooseRarity")}"); return true }
-    if (args.size <= 3) { tcMsg(sender, "${messagesConfig.getString("Messages.ChooseCard")}"); return true }
+fun cmdBuyCard(cardsConfig: FileConfiguration, args: Array<String>, sender: CommandSender, p: Player, config: FileConfiguration): Boolean {
+
+    if (args.size <= 2) {
+        tcMsg(sender, Messages.ChooseRarity)
+        return true
+    }
+
+    if (args.size <= 3) {
+        tcMsg(sender, Messages.ChooseCard)
+        return true
+    }
+
     if (!cardsConfig.contains("Cards.${args[2]}.${args[3]}")) {
-        tcMsg(sender, "${messagesConfig.getString("Messages.CardDoesntExist")}")
+        tcMsg(sender, Messages.CardDoesntExist)
         return true
     }
 
@@ -28,10 +38,10 @@ fun cmdBuyCard(cardsConfig: FileConfiguration, args: Array<String>, sender: Comm
     }
 
     if (!canBuy) {
-        tcMsg(sender, "${messagesConfig.getString("Messages.CannotBeBought")}"); return true
+        tcMsg(sender, Messages.CannotBeBought); return true
     }
     if (TradingCards.econ!!.getBalance(p) < buyPrice) {
-        tcMsg(sender, "${messagesConfig.getString("Messages.NotEnoughMoney")}")
+        tcMsg(sender, Messages.NotEnoughMoney)
         return true
     }
 
@@ -48,18 +58,16 @@ fun cmdBuyCard(cardsConfig: FileConfiguration, args: Array<String>, sender: Comm
     else if (p.gameMode == GameMode.SURVIVAL)
         p.world.dropItem(p.location, CardManager.createPlayerCard(args[3], args[2], 1, false))
 
-    tcMsg(sender,
-            messagesConfig.getString("Messages.BoughtCard")!!
-                    .replaceFirst("%amount%", buyPrice.toString()))
+    tcMsg(sender, Messages.BoughtCard.replaceFirst("%amount%", buyPrice.toString()))
 
     return true
 }
 
-fun cmdBuyPack(config: FileConfiguration, args: Array<String>, sender: CommandSender, messagesConfig: FileConfiguration, p: Player): Boolean {
+fun cmdBuyPack(config: FileConfiguration, args: Array<String>, sender: CommandSender, p: Player): Boolean {
 
-    if (args.size <= 2) { tcMsg(sender, "${messagesConfig.getString("Messages.ChoosePack")}"); return true }
+    if (args.size <= 2) { tcMsg(sender, Messages.ChoosePack); return true }
     if (!config.contains("BoosterPacks.${args[2]}")) {
-        tcMsg(sender, "${messagesConfig.getString("Messages.PackDoesntExist")}")
+        tcMsg(sender, Messages.PackDoesntExist)
         return true
     }
 
@@ -73,10 +81,10 @@ fun cmdBuyPack(config: FileConfiguration, args: Array<String>, sender: CommandSe
     }
 
     if (!canBuy) {
-        tcMsg(sender, "${messagesConfig.getString("Messages.CannotBeBought")}"); return true
+        tcMsg(sender, Messages.CannotBeBought); return true
     }
     if (TradingCards.econ!!.getBalance(p) < buyPrice) {
-        tcMsg(sender, "${messagesConfig.getString("Messages.NotEnoughMoney")}")
+        tcMsg(sender, Messages.NotEnoughMoney)
         return true
     }
 
@@ -94,32 +102,32 @@ fun cmdBuyPack(config: FileConfiguration, args: Array<String>, sender: CommandSe
     else if (p.gameMode == GameMode.SURVIVAL)
         p.world.dropItem(p.location, DeckManager.createBoosterPack(args[2]))
 
-    tcMsg(sender, messagesConfig.getString("Messages.BoughtCard")!!.replaceFirst("%amount%", buyPrice.toString()))
+    tcMsg(sender, Messages.BoughtCard.replaceFirst("%amount%", buyPrice.toString()))
     return true
 }
 
-fun cmdBuy(p: Player, args: Array<String>, config: FileConfiguration, cardsConfig: FileConfiguration, messagesConfig: FileConfiguration): Boolean {
+fun cmdBuy(p: Player, args: Array<String>, config: FileConfiguration, cardsConfig: FileConfiguration): Boolean {
 
     if (!p.hasPermission("fwtc.buy")) {
-        tcMsg(p, "${messagesConfig.getString("Messages.NoPerms")}")
+        tcMsg(p, Messages.NoPerms)
         return true
     }
 
     if (!TradingCards.instance.hasVault) {
-        tcMsg(p, "${messagesConfig.getString("Messages.NoVault")}")
+        tcMsg(p, Messages.NoVault)
         return true
     }
 
     if (args.size <= 1) {
-        tcMsg(p, "${messagesConfig.getString("Messages.BuyUsage")}")
+        tcMsg(p, Messages.BuyUsage)
         return true
     }
 
     return when (args[1].toLowerCase()) {
-        "pack" -> cmdBuyPack(config, args, p, messagesConfig, p)
-        "card" -> cmdBuyCard(cardsConfig, args, p, messagesConfig, p, config)
+        "pack" -> cmdBuyPack(config, args, p, p)
+        "card" -> cmdBuyCard(cardsConfig, args, p, p, config)
         else -> {
-            tcMsg(p, "${messagesConfig.getString("Messages.BuyUsage")}")
+            tcMsg(p, Messages.BuyUsage)
             true
         }
     }
