@@ -16,6 +16,8 @@ import java.util.*
 
 object CardManager {
 
+    private val cardNamePattern = Regex("^[a-zA-Z0-9-_]+$")
+
     private fun getCardFromConfig(rarity: String, cardName: String): Card {
         val config = Config.PLUGIN
         val cardConfig = Config.CARDS
@@ -120,9 +122,7 @@ object CardManager {
             return
         }
 
-        val regex = Regex("^[a-zA-Z0-9-_]+$")
-
-        if (!name.matches(regex)) {
+        if (!name.matches(cardNamePattern)) {
             creator.sendMessage(cMsg("${Config.CARDS.getString("Messages.Prefix")} ${Config.CARDS.getString("Messages.CreateNoName")}"))
             return
         }
@@ -138,10 +138,10 @@ object CardManager {
             return
         }
 
-        Config.CARDS["Cards.$rarity.$name.Series"] = if (series.matches(regex)) series else "None"
-        Config.CARDS["Cards.$rarity.$name.Type"] = if (type.matches(regex)) type else "None"
+        Config.CARDS["Cards.$rarity.$name.Series"] = if (series.matches(cardNamePattern)) series else "None"
+        Config.CARDS["Cards.$rarity.$name.Type"] = if (type.matches(cardNamePattern)) type else "None"
         Config.CARDS["Cards.$rarity.$name.Has-Shiny-Version"] = hasShiny
-        Config.CARDS["Cards.$rarity.$name.Info"] = if (info.matches(regex)) info else "None"
+        Config.CARDS["Cards.$rarity.$name.Info"] = if (info.matches(cardNamePattern)) info else "None"
 
         ConfigManager.cardsConfig.save()
         ConfigManager.reloadCardsConfig()
