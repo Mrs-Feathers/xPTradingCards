@@ -169,14 +169,19 @@ object CardManager {
                         .trim()
                         .replace(" ", "_")
 
-        if (serializedCardName.isEmpty()) return "None"
+        /*if (serializedCardName.isEmpty()) return "None"
 
         val keys = Config.CARDS.getConfigurationSection("Cards.$rarity")?.getKeys(false) ?: return "None"
 
         if (keys.contains(serializedCardName))
             return serializedCardName
 
-        return keys.find { it.startsWith(serializedCardName) } ?: "None"
+        return keys.find { it.startsWith(serializedCardName) } ?: "None"*/
+
+        return if (Config.CARDS.contains("Cards.$rarity.$serializedCardName"))
+            serializedCardName
+        else "None"
+
 
         /* FATHER FORGIVE THEM FOR THEY DO NOT KNOW WHAT THEY DO
 
