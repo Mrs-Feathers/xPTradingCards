@@ -166,11 +166,17 @@ object CardManager {
                             if (hasPrefix) it.replaceFirst(prefix, "")
                             else it
                         }.replaceFirst("$shinyPrefix ", "")
+                        .trim()
                         .replace(" ", "_")
 
-        return if (Config.CARDS.contains("Cards.$rarity.$serializedCardName")) serializedCardName
-        else "None"
+        if (serializedCardName.isEmpty()) return "None"
 
+        val keys = Config.CARDS.getConfigurationSection("Cards.$rarity")?.getKeys(false) ?: return "None"
+
+        if (keys.contains(serializedCardName))
+            return serializedCardName
+
+        return keys.find { it.startsWith(serializedCardName) } ?: "None"
 
         /* FATHER FORGIVE THEM FOR THEY DO NOT KNOW WHAT THEY DO
 
