@@ -146,7 +146,7 @@ object CardManager {
         ConfigManager.cardsConfig.save()
         ConfigManager.reloadCardsConfig()
         creator.sendMessage(cMsg(
-                "${Config.CARDS.getString("Messages.Prefix")} ${Config.CARDS.getString("Messages.CreateSuccess")!!
+                "${Config.CARDS.getString("Messages.Prefix")} ${Config.MESSAGES.getString("Messages.CreateSuccess")!!
                         .replaceFirst("%name%", name)
                         .replaceFirst("%rarity%", rarity)}"))
 
