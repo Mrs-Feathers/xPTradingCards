@@ -1,10 +1,10 @@
 package it.forgottenworld.tradingcards.commands
 
-import it.forgottenworld.tradingcards.config.Messages
-import it.forgottenworld.tradingcards.deck.DeckManager
+import it.forgottenworld.tradingcards.data.Messages
+import it.forgottenworld.tradingcards.manager.DeckManager.createDeck
+import it.forgottenworld.tradingcards.manager.DeckManager.hasDeck
 import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.tcMsg
-import org.apache.commons.lang3.StringUtils
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
 
@@ -20,7 +20,8 @@ fun cmdGetDeck(p: Player, args: Array<String>): Boolean {
         return true
     }
 
-    if (!StringUtils.isNumeric(args[1])) {
+    val deckId = args[1].toIntOrNull()
+    if (deckId == null) {
         tcMsg(p, Messages.GetDeckUsage)
         return true
     }
@@ -30,18 +31,18 @@ fun cmdGetDeck(p: Player, args: Array<String>): Boolean {
         return true
     }
 
-    if (DeckManager.hasDeck(p, args[1].toInt())) {
+    if (p.hasDeck(deckId)) {
         tcMsg(p, Messages.AlreadyHaveDeck)
         return true
     }
 
     if (p.inventory.firstEmpty() != -1) {
         p.sendMessage(cMsg("${Messages.Prefix} ${Messages.GiveDeck}"))
-        p.inventory.addItem(DeckManager.createDeck(p, args[1].toInt()))
+        p.inventory.addItem(p.createDeck(args[1].toInt()))
     } else {
         if (p.gameMode == GameMode.SURVIVAL) {
             p.sendMessage(cMsg("${Messages.Prefix} ${Messages.GiveDeck}"))
-            p.world.dropItem(p.location, DeckManager.createDeck(p, args[1].toInt()))
+            p.world.dropItem(p.location, p.createDeck(args[1].toInt()))
         }
     }
     return true

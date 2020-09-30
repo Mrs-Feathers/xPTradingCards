@@ -2,14 +2,14 @@ package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.config.Config
-import it.forgottenworld.tradingcards.config.Messages
+import it.forgottenworld.tradingcards.data.General
+import it.forgottenworld.tradingcards.data.Messages
+import it.forgottenworld.tradingcards.data.Rarities
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.ChatColor
-import org.bukkit.Material
-import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
 
-fun cmdWorth(p: Player, config: FileConfiguration, cardsConfig: FileConfiguration): Boolean {
+fun cmdWorth(p: Player): Boolean {
 
     if (!p.hasPermission("fwtc.worth")) {
         tcMsg(p, Messages.NoPerms)
@@ -21,7 +21,7 @@ fun cmdWorth(p: Player, config: FileConfiguration, cardsConfig: FileConfiguratio
         return true
     }
 
-    if (p.inventory.getItem(p.inventory.heldItemSlot)?.type != Material.valueOf(config.getString("General.Card-Material")!!)) {
+    if (p.inventory.getItem(p.inventory.heldItemSlot)?.type != General.CardMaterial) {
         tcMsg(p, Messages.NotACard)
         return true
     }
@@ -34,25 +34,17 @@ fun cmdWorth(p: Player, config: FileConfiguration, cardsConfig: FileConfiguratio
         println(ChatColor.stripColor(itemName))
     }
 
-    val splitName = ChatColor.stripColor(itemName)!!.split(" ")
-    val cardName = splitName[if (splitName.size > 1) 1 else 0]
-    val rarity = ChatColor.stripColor(itemInHand.itemMeta!!.lore!![3])
+    val cardName = ChatColor.stripColor(itemName)?.substringAfter(" ") ?: return true
+    val rarity = itemInHand.itemMeta?.lore?.get(3)?.let { ChatColor.stripColor(it) } ?: return true
+    val card = Rarities[rarity]?.cards?.get(cardName) ?: return true
 
     if (Config.DEBUG) {
         println(cardName)
         println(rarity)
     }
 
-    var canBuy = false
-    var buyPrice = 0.0
-
-    if (cardsConfig.contains("Cards.$rarity.$cardName.Buy-Price")) {
-        buyPrice = cardsConfig.getDouble("Cards.$rarity.$cardName.Buy-Price")
-        canBuy = buyPrice > 0.0
-    }
-
-    if (canBuy)
-        tcMsg(p, Messages.CanBuy.replaceFirst("%buyAmount%", buyPrice.toString()))
+    if (card.price > 0.0)
+        tcMsg(p, Messages.CanBuy.replaceFirst("%buyAmount%", card.price.toString()))
     else
         tcMsg(p, Messages.CanNotBuy)
 

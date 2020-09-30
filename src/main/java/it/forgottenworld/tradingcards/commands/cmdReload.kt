@@ -1,17 +1,17 @@
 package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.config.ConfigManager
-import it.forgottenworld.tradingcards.config.Messages
+import it.forgottenworld.tradingcards.config.Config
+import it.forgottenworld.tradingcards.data.General
+import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.command.CommandSender
-import org.bukkit.configuration.file.FileConfiguration
 
-fun cmdReload(sender: CommandSender, config: FileConfiguration): Boolean {
+fun cmdReload(sender: CommandSender): Boolean {
     if (sender.hasPermission("fwtc.reload")) {
         tcMsg(sender, Messages.Reload)
-        ConfigManager.reloadAllConfigs()
-        if (config.getBoolean("General.Schedule-Cards")) TradingCards.instance.task.startTimer()
+        Config.reloadAllConfigs()
+        if (General.ScheduleCards) TradingCards.instance.task.startTimer()
         return true
     }
     tcMsg(sender, Messages.NoPerms)

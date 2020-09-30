@@ -1,8 +1,7 @@
 package it.forgottenworld.tradingcards
 
 import it.forgottenworld.tradingcards.commands.DefaultCommand
-import it.forgottenworld.tradingcards.config.Config
-import it.forgottenworld.tradingcards.config.Messages
+import it.forgottenworld.tradingcards.data.*
 import it.forgottenworld.tradingcards.listeners.EntityListener
 import it.forgottenworld.tradingcards.listeners.PlayerListener
 import it.forgottenworld.tradingcards.task.Task
@@ -21,7 +20,21 @@ class TradingCards : JavaPlugin() {
     override fun onEnable() {
         try {
 
+            saveDefaultConfig()
+
             instance = this
+
+            General.load()
+            PluginSupport.load()
+            Chances.load()
+            Rarities.load()
+            BoosterPacks.load()
+            Colors.load()
+            DisplayNames.load()
+            Blacklist.load()
+            Messages.load()
+            Decks.load()
+
             nameSpacedKey = NamespacedKey(this,"uncraftable")
 
             server.pluginManager.addPermission(permRarities)
@@ -30,9 +43,7 @@ class TradingCards : JavaPlugin() {
 
             getCommand("fwtc")?.setExecutor(DefaultCommand())
 
-            Messages.load()
-
-            if (Config.PLUGIN.getBoolean("PluginSupport.Vault.Vault-Enabled"))
+            if (PluginSupport.Vault.Enabled)
                 println(
                         if (setupEconomy())
                             "[FWTradingCards] Vault hook successful!"
@@ -40,7 +51,7 @@ class TradingCards : JavaPlugin() {
                             "[FWTradingCards] Vault not found, hook unsuccessful!"
                 )
 
-            if (Config.PLUGIN.getBoolean("General.Schedule-Cards")) {
+            if (General.ScheduleCards) {
                 task = Task()
                 task.startTimer()
             }

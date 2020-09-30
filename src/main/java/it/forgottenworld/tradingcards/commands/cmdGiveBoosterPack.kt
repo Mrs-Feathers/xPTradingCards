@@ -1,8 +1,8 @@
 package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.config.Config
-import it.forgottenworld.tradingcards.config.Messages
-import it.forgottenworld.tradingcards.deck.DeckManager
+import it.forgottenworld.tradingcards.data.Messages
+import it.forgottenworld.tradingcards.model.BoosterPack
 import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.Bukkit
@@ -35,10 +35,10 @@ fun cmdGiveBoosterPack(sender: CommandSender, args: Array<String>): Boolean {
 
     if (p!!.inventory.firstEmpty() != -1) {
         p.sendMessage(cMsg("${Messages.Prefix} ${Messages.BoosterPackMsg}"))
-        p.inventory.addItem(DeckManager.createBoosterPack(args[2]))
+        p.inventory.addItem(BoosterPack.getItemStack(args[2]))
     } else if (p.gameMode == GameMode.SURVIVAL) {
         p.sendMessage(cMsg("${Messages.Prefix} ${Messages.BoosterPackMsg}"))
-        p.world.dropItem(p.location, DeckManager.createBoosterPack(args[2]))
+        p.world.dropItem(p.location, BoosterPack.getItemStack(args[2]))
     }
 
     return true

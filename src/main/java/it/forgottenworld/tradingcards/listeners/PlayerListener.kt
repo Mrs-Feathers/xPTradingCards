@@ -1,18 +1,21 @@
 package it.forgottenworld.tradingcards.listeners
 
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.card.CardManager
 import it.forgottenworld.tradingcards.config.Config
-import it.forgottenworld.tradingcards.config.ConfigManager
-import it.forgottenworld.tradingcards.config.Messages
-import it.forgottenworld.tradingcards.deck.DeckManager
+import it.forgottenworld.tradingcards.data.Decks
+import it.forgottenworld.tradingcards.data.General
+import it.forgottenworld.tradingcards.data.Messages
+import it.forgottenworld.tradingcards.data.Rarities
+import it.forgottenworld.tradingcards.manager.CardManager
+import it.forgottenworld.tradingcards.manager.DeckManager.openDeck
+import it.forgottenworld.tradingcards.model.Card
+import it.forgottenworld.tradingcards.model.Deck
 import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.util.capitalizeFully
 import it.forgottenworld.tradingcards.util.printDebug
-import org.apache.commons.lang.WordUtils
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
-import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -24,6 +27,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
+import kotlin.random.Random
 
 class PlayerListener : Listener {
 
@@ -39,47 +43,39 @@ class PlayerListener : Listener {
         val titleNum = e.view.title.split("#")
         val deckNum = titleNum[1].toInt()
 
-        if (Config.DEBUG) {
-            println("[Cards] Deck num: $deckNum")
-            println("[Cards] Title: ${title[0]}")
-            println("[Cards] Title: ${title[1]}")
-        }
-
         val id = Bukkit
                 .getOfflinePlayers()
                 .find { it.name == ChatColor.stripColor(title[0]) ?: return }
                 ?.uniqueId ?: return
-        printDebug("[Cards] New ID: $id")
 
         val serialized: MutableList<String?> = mutableListOf()
 
-        contents.forEach {
+        Decks[id]!![deckNum] = Deck(id, contents.mapNotNull {
+            if (it == null || it.type != General.CardMaterial) null
+            if (it.itemMeta?.hasDisplayName() == true) {
 
-            if (it != null &&
-                    it.type != Material.AIR &&
-                    it.type == Material.valueOf(Config.PLUGIN.getString("General.Card-Material")!!)) {
+                val rarityName = ChatColor
+                        .stripColor(it.itemMeta!!.lore!!.last())!!
+                        .replaceFirst("${General.ShinyName} ", "")
+                val rarity = Rarities[rarityName]!!
 
-                if (it.itemMeta!!.hasDisplayName()) {
+                val cardName = Card.parseDisplayName(rarityName, it.itemMeta!!.displayName)
+                val card = rarity.cards[cardName]!!
 
-                    val lore = it.itemMeta!!.lore
-                    val shinyPrefix = Config.PLUGIN.getString("General.Shiny-Name")!!
-                    val rarity = ChatColor.stripColor(lore!![lore.size - 1])!!.replaceFirst("$shinyPrefix ", "")
-                    val card = CardManager.getCardName(rarity, it.itemMeta!!.displayName)
-                    val amount = it.amount.toString()
-                    val shiny = if (it.containsEnchantment(Enchantment.ARROW_INFINITE)) "yes" else "no"
-                    val serializedString = "$rarity,$card,$amount,$shiny"
+                val isShiny = it.containsEnchantment(Enchantment.ARROW_INFINITE)
+                val shiny = if (isShiny) "yes" else "no"
 
-                    serialized.add(serializedString)
-                    if (Config.DEBUG)
-                        println("[Cards] Added $serializedString to deck file.")
+                val serializedString = "$rarityName,$cardName,${it.amount},$shiny"
 
-                } else Bukkit.getPlayer(ChatColor.stripColor(title[0])!!)?.let {p ->
-                    p.world.dropItem(p.location, it)
-                }
+                serialized.add(serializedString)
+                Deck.DeckCardGroup(card, it.amount, isShiny)
+            } else Bukkit.getPlayer(ChatColor.stripColor(title[0])!!)?.let {p ->
+                p.world.dropItem(p.location, it)
+                null
             }
-        }
+        })
         Config.DECKS["Decks.Inventories.$id.$deckNum"] = serialized
-        ConfigManager.decksConfig.save()
+        Config.decksConfig.save()
     }
 
     @EventHandler
@@ -89,7 +85,7 @@ class PlayerListener : Listener {
 
         fun doAfter() {
             if (p.inventory.getItem(p.inventory.heldItemSlot)?.type
-                    != Material.valueOf(Config.PLUGIN.getString("General.Deck-Material")!!)) return
+                    != General.DeckMaterial) return
 
             printDebug("[Cards] Deck material...")
             if (p.gameMode == GameMode.CREATIVE) return
@@ -105,26 +101,15 @@ class PlayerListener : Listener {
             printDebug("[Cards] Enchant is level 10...")
             val name = p.inventory.getItem(p.inventory.heldItemSlot)?.itemMeta!!.displayName
 
-            DeckManager.openDeck(p, name.split("#")[1].toInt())
+            p.openDeck(name.split("#")[1].toInt())
         }
 
-        if (p.inventory.getItem(p.inventory.heldItemSlot)?.type
-                == Material.valueOf(Config.PLUGIN.getString("General.BoosterPack-Material")!!) &&
-                event.player.hasPermission("fwtc.openboosterpack")) {
+        if (p.inventory.getItem(p.inventory.heldItemSlot)?.type == General.BoosterPackMaterial
+                && event.player.hasPermission("fwtc.openboosterpack")) {
 
             if (p.gameMode == GameMode.CREATIVE) {
                 event.player.sendMessage(cMsg(
-                        "${
-                            ConfigManager
-                                    .messagesConfig
-                                    .config
-                                    ?.getString("Messages.Prefix")
-                        } ${
-                            ConfigManager
-                                    .messagesConfig
-                                    .config
-                                    ?.getString("Messages.NoCreative")
-                        }"))
+                        "${Messages.Prefix} ${Messages.NoCreative}"))
                 doAfter()
                 return
             }
@@ -156,25 +141,32 @@ class PlayerListener : Listener {
 
             p.sendMessage(cMsg("${Messages.Prefix} ${Messages.OpenBoosterPack}"))
 
+            val normalRarity = Rarities[line1[1].capitalizeFully()] ?: return
+            val specialRarity = Rarities[line2[1].capitalizeFully()] ?: return
+
             for (i in 0 until normalCardAmount) {
                 if (p.inventory.firstEmpty() != -1)
-                    p.inventory.addItem(CardManager.generateCard(WordUtils.capitalizeFully(line1[1])))
+                    p.inventory.addItem(CardManager.getRandomCardItemStack(normalRarity))
                 else if (p.gameMode == GameMode.SURVIVAL)
-                    p.world.dropItem(p.location, CardManager.generateCard(WordUtils.capitalizeFully(line1[1]))!!)
+                    p.world.dropItem(p.location, CardManager.getRandomCardItemStack(normalRarity))
             }
 
             for (i in 0 until specialCardAmount) {
                 if (p.inventory.firstEmpty() != -1)
-                    p.inventory.addItem(CardManager.generateCard(WordUtils.capitalizeFully(line2[1])))
+                    p.inventory.addItem(CardManager.getRandomCardItemStack(specialRarity))
                 else if (p.gameMode == GameMode.SURVIVAL)
-                    p.world.dropItem(p.location, CardManager.generateCard(WordUtils.capitalizeFully(line2[1]))!!)
+                    p.world.dropItem(p.location, CardManager.getRandomCardItemStack(specialRarity))
             }
 
             if (hasExtra) for (i in 0 until extraCardAmount) {
-                if (p.inventory.firstEmpty() != -1)
-                    p.inventory.addItem(CardManager.generateCard(WordUtils.capitalizeFully(line3[1])))
-                else if (p.gameMode == GameMode.SURVIVAL)
-                    p.world.dropItem(p.location, CardManager.generateCard(WordUtils.capitalizeFully(line3[1]))!!)
+
+                val extraRarity = Rarities[line3[1].capitalizeFully()]
+                if (extraRarity != null) {
+                    if (p.inventory.firstEmpty() != -1)
+                        p.inventory.addItem(CardManager.getRandomCardItemStack(extraRarity))
+                    else if (p.gameMode == GameMode.SURVIVAL)
+                        p.world.dropItem(p.location, CardManager.getRandomCardItemStack(extraRarity))
+                }
             }
         }
 
@@ -184,30 +176,27 @@ class PlayerListener : Listener {
     @EventHandler
     fun onPlayerDeath(e: PlayerDeathEvent) {
 
-        if (!Config.PLUGIN.getBoolean("General.Player-Drops-Card") ||
-                !Config.PLUGIN.getBoolean("General.Auto-Add-Players") ||
+        if (!General.PlayerDropsCard ||
+                !General.AutoAddPlayers ||
                 e.entity.killer == null) return
 
-        Config.PLUGIN.getConfigurationSection("Rarities")
-                ?.getKeys(false)
-                ?.last { k ->
-                    Config.CARDS.contains("Cards.$k.${e.entity.name}")
-                            .also { if (it) printDebug("[Cards] $it") }
-                }?.let {
-                    if (Random().nextInt(100) + 1 <= Config.PLUGIN.getInt("General.Player-Drops-Card-Rarity")) {
-                        e.drops.add(CardManager.createPlayerCard(e.entity.name, it, 1, false))
+        Rarities.values
+                .lastOrNull { it.cards.contains(e.entity.name) }
+                ?.let { it.cards[e.entity.name] }
+                ?.let {
+                    if (Random.nextInt(100) + 1 <= General.PlayerDropsCardRarity) {
+                        e.drops.add(CardManager.getCardItemStack(it, 1))
                         printDebug("[Cards] ${e.drops}")
                     }
-                } ?: println("key is null")
+                }
     }
 
     @EventHandler
     fun onPlayerJoin(e: PlayerJoinEvent) {
 
+        if (!General.AutoAddPlayers) return
+
         val cardsConfig = Config.CARDS
-
-        if (!Config.PLUGIN.getBoolean("General.Auto-Add-Players")) return
-
         val p = e.player
         val gc = GregorianCalendar()
 
@@ -217,38 +206,46 @@ class PlayerListener : Listener {
         val month = gc[Calendar.MONTH] + 1
         val year = gc[Calendar.YEAR]
 
-        val rarities = Config.PLUGIN.getConfigurationSection("Rarities")!!
-
-        val rarityKeys = rarities.getKeys(false)
         val children = TradingCards.permRarities.children
 
         val rarity = if (p.isOp)
-            Config.PLUGIN.getString("General.Player-Op-Rarity") ?: return
+            General.PlayerOpRarity
         else
-            rarityKeys.find {
+            Rarities.keys.find {
                 children["fwtc.rarity.$it"] = false
                 TradingCards.permRarities.recalculatePermissibles()
                 p.hasPermission("fwtc.rarity.$it")
-            } ?: Config.PLUGIN.getString("General.Auto-Add-Player-Rarity") ?: return
+            } ?: General.AutoAddPlayerRarity
 
         if (cardsConfig.contains("Cards.$rarity.${p.name}")) return
 
-        val series = Config.PLUGIN.getString("General.Player-Series")!!
-        val type = Config.PLUGIN.getString("General.Player-Type")!!
-        val hasShiny = Config.PLUGIN.getBoolean("General.Player-Has-Shiny-Version")
+        cardsConfig["Cards.$rarity.${p.name}.Series"] = General.PlayerSeries
+        cardsConfig["Cards.$rarity.${p.name}.Type"] = General.PlayerType
+        cardsConfig["Cards.$rarity.${p.name}.Has-Shiny-Version"] = General.PlayerHasShinyVersion
+        val info = if (General.AmericanMode)
+            "Joined $month/$date/$year"
+        else
+            "Joined $date/$month/$year"
+        cardsConfig["Cards.$rarity.${p.name}.Info"] = info
 
-        cardsConfig["Cards.$rarity.${p.name}.Series"] = series
-        cardsConfig["Cards.$rarity.${p.name}.Type"] = type
-        cardsConfig["Cards.$rarity.${p.name}.Has-Shiny-Version"] = hasShiny
 
-        cardsConfig["Cards.$rarity.${p.name}.Info"] =
-                if (Config.PLUGIN.getBoolean("General.American-Mode"))
-                    "Joined $month/$date/$year"
-                else
-                    "Joined $date/$month/$year"
+        Config.cardsConfig.save()
 
-        ConfigManager.cardsConfig.save()
-        ConfigManager.reloadCardsConfig()
+        Rarities[rarity]?.let {
+            it.cards.put(
+                    p.name,
+                    Card(
+                            p.name.replace(" ", ""),
+                            it,
+                            General.PlayerHasShinyVersion,
+                            General.PlayerSeries,
+                            "None",
+                            General.PlayerType,
+                            info,
+                            0.0
+                    )
+            )
+        }
     }
 
     @EventHandler

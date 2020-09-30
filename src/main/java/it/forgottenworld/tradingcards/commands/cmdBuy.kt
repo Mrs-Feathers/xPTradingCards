@@ -1,18 +1,20 @@
 package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.card.CardManager
-import it.forgottenworld.tradingcards.config.Messages
-import it.forgottenworld.tradingcards.deck.DeckManager
+import it.forgottenworld.tradingcards.data.BoosterPacks
+import it.forgottenworld.tradingcards.data.Messages
+import it.forgottenworld.tradingcards.data.PluginSupport
+import it.forgottenworld.tradingcards.data.Rarities
+import it.forgottenworld.tradingcards.manager.CardManager
+import it.forgottenworld.tradingcards.manager.DeckManager
+import it.forgottenworld.tradingcards.model.BoosterPack
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.command.CommandSender
-import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
-import java.util.*
 
-fun cmdBuyCard(cardsConfig: FileConfiguration, args: Array<String>, sender: CommandSender, p: Player, config: FileConfiguration): Boolean {
+private fun cmdBuyCard(args: Array<String>, sender: CommandSender, p: Player): Boolean {
 
     if (args.size <= 2) {
         tcMsg(sender, Messages.ChooseRarity)
@@ -24,89 +26,76 @@ fun cmdBuyCard(cardsConfig: FileConfiguration, args: Array<String>, sender: Comm
         return true
     }
 
-    if (!cardsConfig.contains("Cards.${args[2]}.${args[3]}")) {
+    val card = Rarities[args[2]]?.cards?.get(args[3])
+    if (card == null) {
         tcMsg(sender, Messages.CardDoesntExist)
         return true
     }
 
-    var buyPrice = 0.0
-    var canBuy = false
-
-    if (cardsConfig.contains("Cards.${args[2]}.${args[3]}.Buy-Price")) {
-        buyPrice = cardsConfig.getDouble("Cards.${args[2]}.${args[3]}.Buy-Price")
-        canBuy = buyPrice > 0.0
+    if (card.price <= 0.0) {
+        tcMsg(sender, Messages.CannotBeBought)
+        return true
     }
 
-    if (!canBuy) {
-        tcMsg(sender, Messages.CannotBeBought); return true
-    }
-    if (TradingCards.econ!!.getBalance(p) < buyPrice) {
+    if (TradingCards.econ!!.getBalance(p) < card.price) {
         tcMsg(sender, Messages.NotEnoughMoney)
         return true
     }
 
-    if (config.getBoolean("PluginSupport.Vault.Closed-Economy")) {
-        TradingCards.econ?.withdrawPlayer(p, buyPrice)
-        TradingCards.econ
-                ?.depositPlayer(Bukkit.getOfflinePlayer(UUID
-                        .fromString(config.getString("PluginSupport.Vault.Server-Account"))), buyPrice)
-
-    } else TradingCards.econ?.withdrawPlayer(p, buyPrice)
+    if (PluginSupport.Vault.ClosedEconomy) {
+        TradingCards.econ?.withdrawPlayer(p, card.price)
+        TradingCards.econ?.depositPlayer(Bukkit.getOfflinePlayer(PluginSupport.Vault.ServerAccount), card.price)
+    } else
+        TradingCards.econ?.withdrawPlayer(p, card.price)
 
     if (p.inventory.firstEmpty() != -1)
-        p.inventory.addItem(CardManager.createPlayerCard(args[3], args[2], 1, false))
+        p.inventory.addItem(CardManager.getCardItemStack(card, 1))
     else if (p.gameMode == GameMode.SURVIVAL)
-        p.world.dropItem(p.location, CardManager.createPlayerCard(args[3], args[2], 1, false))
+        p.world.dropItem(p.location, CardManager.getCardItemStack(card, 1))
 
-    tcMsg(sender, Messages.BoughtCard.replaceFirst("%amount%", buyPrice.toString()))
+    tcMsg(sender, Messages.BoughtCard.replaceFirst("%amount%", card.price.toString()))
 
     return true
 }
 
-fun cmdBuyPack(config: FileConfiguration, args: Array<String>, sender: CommandSender, p: Player): Boolean {
+private fun cmdBuyPack(args: Array<String>, sender: CommandSender, p: Player): Boolean {
 
     if (args.size <= 2) { tcMsg(sender, Messages.ChoosePack); return true }
-    if (!config.contains("BoosterPacks.${args[2]}")) {
+
+    val pack = BoosterPacks[args[2]]
+
+    if (pack == null) {
         tcMsg(sender, Messages.PackDoesntExist)
         return true
     }
 
-
-    var buyPrice = 0.0
-    var canBuy = false
-
-    if (config.contains("BoosterPacks.${args[2]}.Price")) {
-        buyPrice = config.getDouble("BoosterPacks.${args[2]}.Price")
-        if (buyPrice > 0.0) canBuy = true
+    if (pack.price <= 0.0) {
+        tcMsg(sender, Messages.CannotBeBought)
+        return true
     }
 
-    if (!canBuy) {
-        tcMsg(sender, Messages.CannotBeBought); return true
-    }
-    if (TradingCards.econ!!.getBalance(p) < buyPrice) {
+    if (TradingCards.econ!!.getBalance(p) < pack.price) {
         tcMsg(sender, Messages.NotEnoughMoney)
         return true
     }
 
-    if (config.getBoolean("PluginSupport.Vault.Closed-Economy")) {
-
-        TradingCards.econ?.withdrawPlayer(p, buyPrice)
+    if (PluginSupport.Vault.ClosedEconomy) {
+        TradingCards.econ?.withdrawPlayer(p, pack.price)
         TradingCards.econ
-                ?.depositPlayer(Bukkit.getOfflinePlayer(
-                        UUID.fromString(config.getString("PluginSupport.Vault.Server-Account"))), buyPrice)
+                ?.depositPlayer(Bukkit.getOfflinePlayer(PluginSupport.Vault.ServerAccount), pack.price)
 
-    } else TradingCards.econ?.withdrawPlayer(p, buyPrice)
+    } else TradingCards.econ?.withdrawPlayer(p, pack.price)
 
     if (p.inventory.firstEmpty() != -1)
-        p.inventory.addItem(DeckManager.createBoosterPack(args[2]))
+        p.inventory.addItem(BoosterPack.getItemStack(args[2]))
     else if (p.gameMode == GameMode.SURVIVAL)
-        p.world.dropItem(p.location, DeckManager.createBoosterPack(args[2]))
+        p.world.dropItem(p.location, BoosterPack.getItemStack(args[2]))
 
-    tcMsg(sender, Messages.BoughtCard.replaceFirst("%amount%", buyPrice.toString()))
+    tcMsg(sender, Messages.BoughtCard.replaceFirst("%amount%", pack.price.toString()))
     return true
 }
 
-fun cmdBuy(p: Player, args: Array<String>, config: FileConfiguration, cardsConfig: FileConfiguration): Boolean {
+fun cmdBuy(p: Player, args: Array<String>): Boolean {
 
     if (!p.hasPermission("fwtc.buy")) {
         tcMsg(p, Messages.NoPerms)
@@ -124,8 +113,8 @@ fun cmdBuy(p: Player, args: Array<String>, config: FileConfiguration, cardsConfi
     }
 
     return when (args[1].toLowerCase()) {
-        "pack" -> cmdBuyPack(config, args, p, p)
-        "card" -> cmdBuyCard(cardsConfig, args, p, p, config)
+        "pack" -> cmdBuyPack(args, p, p)
+        "card" -> cmdBuyCard(args, p, p)
         else -> {
             tcMsg(p, Messages.BuyUsage)
             true

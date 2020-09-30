@@ -1,7 +1,7 @@
 package it.forgottenworld.tradingcards.commands
 
-import it.forgottenworld.tradingcards.card.CardManager
-import it.forgottenworld.tradingcards.config.Messages
+import it.forgottenworld.tradingcards.data.Messages
+import it.forgottenworld.tradingcards.model.Card
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.entity.Player
 
@@ -12,11 +12,10 @@ fun cmdCreate(p: Player, args: Array<String>): Boolean {
         return true
     }
 
-    if (args.size < 8)
+    if (args.size < 7)
         tcMsg(p, Messages.CreateUsage)
     else {
-
-        CardManager.createCard(
+        Card.saveNew(
                 p,
                 args[1].replace("_", " "),
                 args[2],
@@ -25,7 +24,6 @@ fun cmdCreate(p: Player, args: Array<String>): Boolean {
                 setOf("true", "yes", "y").contains(args[5].toLowerCase()),
                 args[6].replace("_", " ")
         )
-
     }
 
     return false

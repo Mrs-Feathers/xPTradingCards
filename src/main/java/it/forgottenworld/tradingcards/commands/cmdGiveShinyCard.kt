@@ -1,24 +1,27 @@
 package it.forgottenworld.tradingcards.commands
 
-import it.forgottenworld.tradingcards.card.CardManager
-import it.forgottenworld.tradingcards.config.Messages
+import it.forgottenworld.tradingcards.data.Messages
+import it.forgottenworld.tradingcards.data.Rarities
+import it.forgottenworld.tradingcards.manager.CardManager
 import it.forgottenworld.tradingcards.util.tcMsg
-import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
 
 
-fun cmdGiveShinyCard(p: Player, args: Array<String>, cardsConfig: FileConfiguration): Boolean {
-    if (!p.hasPermission("fwtc.giveshinycard")) { tcMsg(p, Messages.NoPerms); return true }
-    if (args.size <= 2) { tcMsg(p, Messages.GiveCardUsage); return true }
+fun cmdGiveShinyCard(p: Player, args: Array<String>): Boolean {
 
-    if (!cardsConfig.contains("Cards.${args[1].replace("_", " ")}.${args[2]}"))
-        tcMsg(p, Messages.NoCard)
-    else
-        p.inventory.addItem(CardManager.createPlayerCard(
-                args[2],
-                args[1].replace("_", " "),
-                1,
-                true))
+    if (!p.hasPermission("fwtc.giveshinycard")) {
+        tcMsg(p, Messages.NoPerms)
+        return true
+    }
+
+    if (args.size <= 2) {
+        tcMsg(p, Messages.GiveCardUsage)
+        return true
+    }
+
+    Rarities[args[1]]?.cards?.get(args[2])
+            ?.let { p.inventory.addItem(CardManager.getCardItemStack(it, 1, true)) }
+            ?: tcMsg(p, Messages.NoCard)
 
     return true
 }

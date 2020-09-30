@@ -30,7 +30,7 @@ General:
   # Should we block cards for mobs from monster spawners?
   Spawner-Block: true
   # In the case of 'true', what should we name the monster with to identify it's from a spawner?
-  Spawner-Mob-Name: 'Spawned Mob'
+  # Spawner-Mob-Name: 'Spawned Mob'
   # Should we automatically add players as cards?
   Auto-Add-Players: false
   Auto-Add-Player-Rarity: Common
@@ -55,23 +55,12 @@ Blacklist:
     - Herobrine
 
 PluginSupport:
-  Towny:
-    Towny-Enabled: false
-    Allow-Duplicates: true
-    Town-Duplicate-Prefix: ''
-    Town-Duplicate-Suffix: '_v%num%'
-    Town-Rarity: Common
-    Town-Series: '2015'
-    Town-Type: 'Town'
-    Has-Shiny: true
   Vault:
     Vault-Enabled: false
     # Is the server running a closed economy? if so, whose account should money go into?
     Closed-Economy: true
+    # UUID, not the username
     Server-Account: TradingCards-Bank
-  MobArena:
-    MobArena-Enabled: false
-    Disable-In-Arena: true
 
 BoosterPacks:
   Starter_Pack:
@@ -135,7 +124,7 @@ Chances:
   Boss-Chance: 100
   # Should bosses always drop a certain rarity?
   Boss-Drop: false
-  Boss-Drop-Rarity: 5
+  Boss-Drop-Rarity: Rare
   # Chance that, wherever a card is given, it'll be a 'shiny' version instead, if it has one.
   Shiny-Version-Chance: 1
   # Enter the chances for various rarities below, out of 100,000. 1 = 1 in 100,000 or 0.001%

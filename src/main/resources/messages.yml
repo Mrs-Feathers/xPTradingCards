@@ -50,7 +50,7 @@ Messages:
   GiveawayHelp: 'Gives all online players a random card.'
   GiveRandomCardUsage: '/fwtc giverandomcard <mobname> <name>'
   GiveRandomCardHelp: 'Gives a random card based on a specified mob.'
-  CreateUsage: '/fwtc create <rarity> <name> <series> <type> <hasShiny> <info> <about>'
+  CreateUsage: '/fwtc create <rarity> <name> <series> <type> <hasShiny> <info>'
   CreateHelp: 'Creates a card.'
   CreateNoName: 'Invalid name! Alphanumeric and underscores only!'
   CreateExists: 'That card already exists!'

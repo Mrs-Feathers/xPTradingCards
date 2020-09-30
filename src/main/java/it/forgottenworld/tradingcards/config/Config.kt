@@ -1,5 +1,7 @@
 package it.forgottenworld.tradingcards.config
 
+import it.forgottenworld.tradingcards.TradingCards
+import it.forgottenworld.tradingcards.data.General
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
@@ -82,16 +84,53 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
     }
 
     companion object {
+
+        lateinit var pluginConfig: Config
+            private set
+        lateinit var decksConfig: Config
+            private set
+        lateinit var messagesConfig: Config
+            private set
+        lateinit var cardsConfig: Config
+            private set
+
         val PLUGIN
-            get() = ConfigManager.pluginConfig.config!!
+            get() = pluginConfig.config!!
         val DECKS
-            get() = ConfigManager.decksConfig.config!!
+            get() = decksConfig.config!!
         val CARDS
-            get() = ConfigManager.cardsConfig.config!!
+            get() = cardsConfig.config!!
         val MESSAGES
-            get() = ConfigManager.messagesConfig.config!!
+            get() = messagesConfig.config!!
         val DEBUG
-            get() = PLUGIN.getBoolean("General.Debug-Mode")
+            get() = General.DebugMode
+
+        private fun reloadPluginConfig() {
+            pluginConfig = Config("config.yml", TradingCards.instance)
+        }
+
+        private fun reloadDecksConfig() {
+            decksConfig = Config("decks.yml", TradingCards.instance)
+        }
+
+        private fun reloadMessagesConfig() {
+            messagesConfig = Config("messages.yml", TradingCards.instance)
+        }
+
+        private fun reloadCardsConfig() {
+            cardsConfig = Config("cards.yml", TradingCards.instance)
+        }
+
+        init {
+            reloadAllConfigs()
+        }
+
+        fun reloadAllConfigs() {
+            reloadPluginConfig()
+            reloadDecksConfig()
+            reloadMessagesConfig()
+            reloadCardsConfig()
+        }
     }
 
 }

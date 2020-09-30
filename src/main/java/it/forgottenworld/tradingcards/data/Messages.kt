@@ -1,4 +1,6 @@
-package it.forgottenworld.tradingcards.config
+package it.forgottenworld.tradingcards.data
+
+import it.forgottenworld.tradingcards.config.Config
 
 object Messages {
 

@@ -1,56 +1,51 @@
 package it.forgottenworld.tradingcards.listeners
 
-import it.forgottenworld.tradingcards.card.CardManager
-import it.forgottenworld.tradingcards.config.Config
-import it.forgottenworld.tradingcards.util.*
+import it.forgottenworld.tradingcards.TradingCards
+import it.forgottenworld.tradingcards.data.Blacklist
+import it.forgottenworld.tradingcards.data.Chances
+import it.forgottenworld.tradingcards.data.General
+import it.forgottenworld.tradingcards.data.Rarities
+import it.forgottenworld.tradingcards.manager.CardManager
+import it.forgottenworld.tradingcards.model.Rarity
+import it.forgottenworld.tradingcards.util.isMobBoss
+import it.forgottenworld.tradingcards.util.printDebug
 import org.bukkit.entity.Mob
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.CreatureSpawnEvent
 import org.bukkit.event.entity.EntityDeathEvent
+import org.bukkit.metadata.FixedMetadataValue
 
 class EntityListener : Listener {
 
     @EventHandler
     fun onEntityDeath(e: EntityDeathEvent) {
 
-        val config = Config.PLUGIN
-
         if (e.entity.killer !is Player) return
         val p = e.entity.killer as Player
 
-        val drop = !isOnList(p) || blacklistMode() != 'b' ||
-                !isOnList(p) && blacklistMode() == 'b' ||
-                isOnList(p) && blacklistMode() == 'w'
+        if (Blacklist.WorldBlacklist.contains(p.world.name) || Blacklist.isPlayerBlacklisted(p) != Blacklist.WhitelistMode)
+            return
 
-        if (drop && !config.getStringList("World-Blacklist").contains(p.world.name)) {
+        val rarity = if (Chances.BossDrop && isMobBoss(e.entityType)) Rarities[Chances.BossDropRarity] ?: return
+        else Rarity.calculate(e.entityType, false) ?: return
 
-            val rare = if (config.getBoolean("Chances.Boss-Drop") && isMobBoss(e.entityType))
-                config.getString("Chances.Boss-Drop-Rarity") ?: "None"
-            else calculateRarity(e.entityType, false)
+        if (General.SpawnerBlock
+                && e.entity.getMetadata("fromSpawner").firstOrNull()?.asBoolean() == true)
+            return
 
-            if (rare !== "None" &&
-                    config.getBoolean("General.Spawner-Block") &&
-                    e.entity.customName != null &&
-                    e.entity.customName == config.getString("General.Spawner-Mob-Name"))
-                printDebug("[Cards] Mob came from spawner, not dropping card.")
-            else
-                printDebug("[Cards] Successfully generated card.")
-                CardManager.generateCard(rare)?.let { e.drops.add(it) }
-        }
+        CardManager.getRandomCardItemStack(rarity).let { e.drops.add(it) }
     }
 
     @EventHandler
     fun onMobSpawn(e: CreatureSpawnEvent) {
 
-        val config = Config.PLUGIN
-
         if (e.entity !is Mob ||
                 e.spawnReason != CreatureSpawnEvent.SpawnReason.SPAWNER ||
-                !config.getBoolean("General.Spawner-Block")) return
+                General.SpawnerBlock) return
 
-        e.entity.customName = config.getString("General.Spawner-Mob-Name")
+        e.entity.setMetadata("fromSpawner", FixedMetadataValue(TradingCards.instance, true))
         e.entity.removeWhenFarAway = true
 
         printDebug("[Cards] Spawner mob renamed.")

@@ -1,44 +1,44 @@
 package it.forgottenworld.tradingcards.commands
 
-import it.forgottenworld.tradingcards.card.CardManager
-import it.forgottenworld.tradingcards.config.Messages
+import it.forgottenworld.tradingcards.data.Messages
+import it.forgottenworld.tradingcards.data.Rarities
+import it.forgottenworld.tradingcards.manager.CardManager
 import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.command.CommandSender
-import org.bukkit.configuration.file.FileConfiguration
 
-fun cmdGiveaway(sender: CommandSender, args: Array<String>, cardsConfig: FileConfiguration): Boolean {
+fun cmdGiveaway(sender: CommandSender, args: Array<String>): Boolean {
+
     if (!sender.hasPermission("fwtc.giveaway")) {
         tcMsg(sender, Messages.NoPerms)
         return true
     }
+
     if (args.size <= 1) {
-        tcMsg(sender, Messages.GiveawayUsage); return true
+        tcMsg(sender, Messages.GiveawayUsage)
+        return true
     }
 
-    val rarityKeys = cardsConfig.getConfigurationSection("Cards")!!.getKeys(false)
-    val keyToUse = rarityKeys.find { it.equals(args[1].replace("_", " "), ignoreCase = true) } ?: ""
-
-    if (keyToUse.isEmpty()) {
-        tcMsg(sender, Messages.NoRarity); return true
+    if (!Rarities.contains(args[1])) {
+        tcMsg(sender, Messages.NoRarity)
+        return true
     }
 
     Bukkit.broadcastMessage(cMsg(
             "${Messages.Prefix} ${
                 Messages.Giveaway
                         .replaceFirst("%player%", sender.name)
-                        .replaceFirst("%rarity%", keyToUse)
+                        .replaceFirst("%rarity%", args[1])
             }"))
 
-    val cardKeys = cardsConfig.getConfigurationSection("Cards.$keyToUse")!!.getKeys(false).toList()
     for (p in Bukkit.getOnlinePlayers()) {
-        val cardName = cardKeys.random()
+        val card = Rarities[args[1]]!!.cards.values.random()
         if (p.inventory.firstEmpty() != -1)
-            p.inventory.addItem(CardManager.createPlayerCard(cardName, keyToUse, 1, false))
+            p.inventory.addItem(CardManager.getCardItemStack(card, 1))
         else if (p.gameMode == GameMode.SURVIVAL)
-            p.world.dropItem(p.location, CardManager.createPlayerCard(cardName, keyToUse, 1, false))
+            p.world.dropItem(p.location, CardManager.getCardItemStack(card, 1))
     }
 
     return true
