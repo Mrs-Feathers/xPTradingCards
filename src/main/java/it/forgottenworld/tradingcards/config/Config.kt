@@ -77,10 +77,9 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
      *
      */
     init {
-        if (exists())
-            loadConfig()
-        else
+        if (!exists())
             createConfig()
+        loadConfig()
     }
 
     companion object {
