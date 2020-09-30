@@ -1,4 +1,4 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
 import it.forgottenworld.tradingcards.data.Blacklist
 import it.forgottenworld.tradingcards.data.Messages

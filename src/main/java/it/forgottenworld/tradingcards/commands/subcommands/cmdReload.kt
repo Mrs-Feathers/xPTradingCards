@@ -1,4 +1,4 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.config.Config
@@ -8,7 +8,7 @@ import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.command.CommandSender
 
 fun cmdReload(sender: CommandSender): Boolean {
-    if (sender.hasPermission("fwtc.reload")) {
+    if (sender.hasPermission("fwtradingcards.reload")) {
         tcMsg(sender, Messages.Reload)
         Config.reloadAllConfigs()
         if (General.ScheduleCards) TradingCards.instance.task.startTimer()

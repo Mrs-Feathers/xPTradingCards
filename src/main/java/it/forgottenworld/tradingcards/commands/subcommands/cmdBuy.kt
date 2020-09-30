@@ -1,4 +1,4 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.data.BoosterPacks
@@ -6,7 +6,6 @@ import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.data.PluginSupport
 import it.forgottenworld.tradingcards.data.Rarities
 import it.forgottenworld.tradingcards.manager.CardManager
-import it.forgottenworld.tradingcards.manager.DeckManager
 import it.forgottenworld.tradingcards.model.BoosterPack
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.Bukkit
@@ -60,7 +59,10 @@ private fun cmdBuyCard(args: Array<String>, sender: CommandSender, p: Player): B
 
 private fun cmdBuyPack(args: Array<String>, sender: CommandSender, p: Player): Boolean {
 
-    if (args.size <= 2) { tcMsg(sender, Messages.ChoosePack); return true }
+    if (args.size <= 2) {
+        tcMsg(sender, Messages.ChoosePack)
+        return true
+    }
 
     val pack = BoosterPacks[args[2]]
 
@@ -97,7 +99,7 @@ private fun cmdBuyPack(args: Array<String>, sender: CommandSender, p: Player): B
 
 fun cmdBuy(p: Player, args: Array<String>): Boolean {
 
-    if (!p.hasPermission("fwtc.buy")) {
+    if (!p.hasPermission("fwtradingcards.buy")) {
         tcMsg(p, Messages.NoPerms)
         return true
     }

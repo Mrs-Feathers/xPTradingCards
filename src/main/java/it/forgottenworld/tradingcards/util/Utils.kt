@@ -105,7 +105,7 @@ fun isMobNeutral(e: EntityType) = neutralMobs.contains(e)
 fun isMobPassive(e: EntityType) = passiveMobs.contains(e)
 
 fun tcMsg(sender: CommandSender, message: String) =
-        sender.sendMessage(cMsg("${Messages.Prefix} $message"))
+        sender.sendMessage(tc("${Messages.Prefix} $message"))
 
 fun printDebug(msg: String) {
     if (Config.DEBUG) println(msg)
@@ -113,7 +113,7 @@ fun printDebug(msg: String) {
 
 fun isMobBoss(e: EntityType) = bossMobs.contains(e)
 
-fun cMsg(message: String) = ChatColor.translateAlternateColorCodes('&', message)
+fun tc(message: String) = ChatColor.translateAlternateColorCodes('&', message)
 
 fun wrapString(s: String): Collection<String> {
     var tail = ChatColor.stripColor(s) ?: return setOf()
@@ -126,9 +126,9 @@ fun wrapString(s: String): Collection<String> {
         val i = head.lastIndexOf(' ')
 
         if (i <= th || i == -1) {
-            res.add(cMsg("&f &7- &f$head"))
+            res.add(tc("&f &7- &f$head"))
         } else {
-            res.add(cMsg("&f &7- &f${head.take(i)}"))
+            res.add(tc("&f &7- &f${head.take(i)}"))
             tail = head.substring(i + 1) + tail
         }
     }

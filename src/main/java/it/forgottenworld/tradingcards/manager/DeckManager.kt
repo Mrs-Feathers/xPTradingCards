@@ -1,9 +1,11 @@
 package it.forgottenworld.tradingcards.manager
 
 import it.forgottenworld.tradingcards.TradingCards
+import it.forgottenworld.tradingcards.config.Config
 import it.forgottenworld.tradingcards.data.Decks
 import it.forgottenworld.tradingcards.data.General
-import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.model.Deck
+import it.forgottenworld.tradingcards.util.tc
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
@@ -24,7 +26,7 @@ object DeckManager {
     fun Player.createDeck(deckNum: Int) =
             blankDeck.apply {
                 val deckMeta = itemMeta!!
-                deckMeta.setDisplayName(cMsg("${General.DeckPrefix}${name}'s Deck #$deckNum"))
+                deckMeta.setDisplayName(tc("${General.DeckPrefix}${name}'s Deck #$deckNum"))
 
                 if (General.HideEnchants)
                     deckMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
@@ -36,6 +38,14 @@ object DeckManager {
 
                 itemMeta = deckMeta
                 addUnsafeEnchantment(Enchantment.DURABILITY, 10)
+
+                if (!Decks.contains(uniqueId))
+                    Decks[uniqueId] = mutableMapOf()
+
+                Decks[uniqueId]?.set(deckNum, Deck(mutableListOf()))
+
+                Config.DECKS["Decks.Inventories.$uniqueId.$deckNum"] = listOf<String>()
+                Config.saveDecksConfig()
             }
 
     fun Player.hasDeck(deckNum: Int) =
@@ -46,15 +56,9 @@ object DeckManager {
             }
 
     fun Player.openDeck(deckNum: Int) {
-
         val deck = Decks[uniqueId]?.get(deckNum) ?: return
-
-        val inv = Bukkit.createInventory(null, 27, cMsg("&c${name}'s Deck #$deckNum"))
-
-        for (c in deck.cards.map { CardManager.getCardItemStack(it.card, it.amount, it.isShiny) }) {
-            inv.addItem(c)
-        }
-
+        val inv = Bukkit.createInventory(null, 27, tc("&c${name}'s Deck #$deckNum"))
+        deck.cards.map { CardManager.getCardItemStack(it.card, it.amount, it.isShiny) }.forEach { inv.addItem(it) }
         openInventory(inv)
     }
 }

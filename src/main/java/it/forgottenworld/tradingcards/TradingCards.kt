@@ -1,6 +1,6 @@
 package it.forgottenworld.tradingcards
 
-import it.forgottenworld.tradingcards.commands.DefaultCommand
+import it.forgottenworld.tradingcards.commands.TradingCardsCommand
 import it.forgottenworld.tradingcards.data.*
 import it.forgottenworld.tradingcards.listeners.EntityListener
 import it.forgottenworld.tradingcards.listeners.PlayerListener
@@ -41,7 +41,7 @@ class TradingCards : JavaPlugin() {
             server.pluginManager.registerEvents(PlayerListener(), this)
             server.pluginManager.registerEvents(EntityListener(), this)
 
-            getCommand("fwtc")?.setExecutor(DefaultCommand())
+            getCommand("fwtradingcards")?.setExecutor(TradingCardsCommand())
 
             if (PluginSupport.Vault.Enabled)
                 println(
@@ -76,7 +76,7 @@ class TradingCards : JavaPlugin() {
     }
 
     companion object {
-        var permRarities = Permission("fwtc.rarity")
+        var permRarities = Permission("fwtradingcards.rarity")
         var econ: Economy? = null
         var perms: Permission? = null
         var chat: Chat? = null

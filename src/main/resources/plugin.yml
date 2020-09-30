@@ -1,65 +1,66 @@
 name: FWTradingCards
 main: it.forgottenworld.tradingcards.TradingCards
 api-version: "1.16"
-version: "1.3.1"
-softdepend: [Vault]
+version: "1.4.0"
+softdepend: [ Vault ]
 
 commands:
-   fwtc:
-      description: All commands.
-      usage: /fwtc
-      permission: fwtc.fwtc
-      permission-message: You don't have permission to do this!
+  fwtradingcards:
+    description: All commands.
+    usage: /fwtc
+    aliases: [ fwtradingcards,fwtc ]
+    permission: fwtradingcards.fwtradingcards
+    permission-message: You don't have permission to do this!
 
 permissions:
-    fwtc.fwtc:
-        description: All commands.
-        default: true
-    fwtc.reload:
-        description: Reload.
-        default: op
-    fwtc.givecard:
-        description: Give a specific card.
-        default: op
-    fwtc.giveshinycard:
-        description: Give a specific shiny card.
-        default: op
-    fwtc.giverandomcard:
-        description: Give a random card.
-        default: op
-    fwtc.giveaway:
-        description: Give away cards.
-        default: op
-    fwtc.create:
-        description: Create a card.
-        default: op
-    fwtc.giveboosterpack:
-        description: Give a booster pack.
-        default: op
-    fwtc.decks.*:
-        description: Deck permissions.
-        default: op
-    fwtc.getdeck:
-        description: Get a deck.
-        default: true
-    fwtc.list:
-        description: List all cards.
-        default: true
-    fwtc.buy:
-        description: Buy cards or packs.
-        default: true
-    fwtc.sell:
-        description: Sell the card you are holding.
-        default: true
-    fwtc.worth:
-        description: Get the value of the card.
-        default: true
-    fwtc.toggle:
-        description: Toggle cards.
-        default: true
-    fwtc.credits:
-        description: Shows credits.
-        default: true
-    fwtc.listpacks:
-        description: Lists all booster packs.
-        default: true
+  fwtradingcards.fwtradingcards:
+      description: All commands.
+      default: true
+  fwtradingcards.reload:
+      description: Reload.
+      default: op
+  fwtradingcards.givecard:
+      description: Give a specific card.
+      default: op
+  fwtradingcards.giveshinycard:
+    description: Give a specific shiny card.
+    default: op
+  fwtradingcards.giverandomcard:
+    description: Give a random card.
+    default: op
+  fwtradingcards.giveaway:
+    description: Give away cards.
+    default: op
+  fwtradingcards.create:
+    description: Create a card.
+    default: op
+  fwtradingcards.giveboosterpack:
+    description: Give a booster pack.
+    default: op
+  fwtradingcards.decks.*:
+    description: Deck permissions.
+    default: op
+  fwtradingcards.getdeck:
+    description: Get a deck.
+    default: true
+  fwtradingcards.list:
+    description: List all cards.
+    default: true
+  fwtradingcards.buy:
+    description: Buy cards or packs.
+    default: true
+  fwtradingcards.sell:
+    description: Sell the card you are holding.
+    default: true
+  fwtradingcards.worth:
+    description: Get the value of the card.
+    default: true
+  fwtradingcards.toggle:
+    description: Toggle cards.
+    default: true
+  fwtradingcards.credits:
+    description: Shows credits.
+    default: true
+  fwtradingcards.listpacks:
+    description: Lists all booster packs.
+    default: true

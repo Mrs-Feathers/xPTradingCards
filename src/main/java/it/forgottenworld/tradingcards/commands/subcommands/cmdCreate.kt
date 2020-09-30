@@ -1,4 +1,4 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.model.Card
@@ -7,7 +7,7 @@ import org.bukkit.entity.Player
 
 fun cmdCreate(p: Player, args: Array<String>): Boolean {
 
-    if (!p.hasPermission("fwtc.create")) {
+    if (!p.hasPermission("fwtradingcards.create")) {
         tcMsg(p, Messages.NoPerms)
         return true
     }

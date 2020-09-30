@@ -1,4 +1,4 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
 import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.config.Config
@@ -11,7 +11,7 @@ import org.bukkit.entity.Player
 
 fun cmdWorth(p: Player): Boolean {
 
-    if (!p.hasPermission("fwtc.worth")) {
+    if (!p.hasPermission("fwtradingcards.worth")) {
         tcMsg(p, Messages.NoPerms)
         return true
     }

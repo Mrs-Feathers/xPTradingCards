@@ -1,16 +1,18 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.manager.DeckManager.createDeck
 import it.forgottenworld.tradingcards.manager.DeckManager.hasDeck
-import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.util.tc
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
 
+
+
 fun cmdGetDeck(p: Player, args: Array<String>): Boolean {
 
-    if (!p.hasPermission("fwtc.getdeck")) {
+    if (!p.hasPermission("fwtradingcards.getdeck")) {
         tcMsg(p, Messages.NoPerms)
         return true
     }
@@ -26,7 +28,7 @@ fun cmdGetDeck(p: Player, args: Array<String>): Boolean {
         return true
     }
 
-    if (!p.hasPermission("fwtc.decks.${args[1]}")) {
+    if (!p.hasPermission("fwtradingcards.decks.${args[1]}")) {
         tcMsg(p, Messages.MaxDecks)
         return true
     }
@@ -37,13 +39,12 @@ fun cmdGetDeck(p: Player, args: Array<String>): Boolean {
     }
 
     if (p.inventory.firstEmpty() != -1) {
-        p.sendMessage(cMsg("${Messages.Prefix} ${Messages.GiveDeck}"))
+        p.sendMessage(tc("${Messages.Prefix} ${Messages.GiveDeck}"))
         p.inventory.addItem(p.createDeck(args[1].toInt()))
-    } else {
-        if (p.gameMode == GameMode.SURVIVAL) {
-            p.sendMessage(cMsg("${Messages.Prefix} ${Messages.GiveDeck}"))
-            p.world.dropItem(p.location, p.createDeck(args[1].toInt()))
-        }
+    } else if (p.gameMode == GameMode.SURVIVAL) {
+        p.sendMessage(tc("${Messages.Prefix} ${Messages.GiveDeck}"))
+        p.world.dropItem(p.location, p.createDeck(args[1].toInt()))
     }
+
     return true
 }

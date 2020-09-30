@@ -5,7 +5,7 @@ import it.forgottenworld.tradingcards.data.General
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.data.Rarities
 import it.forgottenworld.tradingcards.manager.CardManager
-import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.util.tc
 import it.forgottenworld.tradingcards.util.printDebug
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -21,7 +21,7 @@ class Task {
             scheduler.cancelTask(taskid)
 
         val hours = General.ScheduleCardTimeInHours.coerceAtLeast(1)
-        Bukkit.broadcastMessage(cMsg("${Messages.Prefix} ${Messages.TimerMessage.replaceFirst("%hour%", hours.toString())}"))
+        Bukkit.broadcastMessage(tc("${Messages.Prefix} ${Messages.TimerMessage.replaceFirst("%hour%", hours.toString())}"))
 
         val interval = hours * 20 * 60 * 60L
 
@@ -35,7 +35,7 @@ class Task {
 
                 if (rarity != null) {
 
-                    Bukkit.broadcastMessage(cMsg("${Messages.Prefix} ${Messages.ScheduledGiveaway}"))
+                    Bukkit.broadcastMessage(tc("${Messages.Prefix} ${Messages.ScheduledGiveaway}"))
 
                     for (p in Bukkit.getOnlinePlayers()) {
 

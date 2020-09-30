@@ -5,8 +5,8 @@ import it.forgottenworld.tradingcards.data.Chances
 import it.forgottenworld.tradingcards.data.General
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.data.Rarities
-import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.capitalizeFully
+import it.forgottenworld.tradingcards.util.tc
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import kotlin.random.Random
@@ -31,13 +31,12 @@ class Card(
         fun parseDisplayName(rarityName: String, display: String): String {
 
             val hasPrefix = General.CardPrefix.isNotBlank()
-            val prefix = if (hasPrefix) ChatColor.stripColor(General.CardPrefix) ?: "" else ""
             val shinyPrefix = General.ShinyName
 
             val serializedCardName =
                     (ChatColor.stripColor(display) ?: return "None")
                             .let {
-                                if (hasPrefix) it.replaceFirst(prefix, "")
+                                if (hasPrefix) it.replaceFirst(ChatColor.stripColor(tc(General.CardPrefix)) ?: "", "")
                                 else it
                             }.replaceFirst("$shinyPrefix ", "")
                             .trim()
@@ -53,17 +52,17 @@ class Card(
             val rar = rarity.capitalizeFully()
 
             if (Rarities[rar]?.cards?.contains(name) == true) {
-                creator.sendMessage(cMsg("${Messages.Prefix} ${Messages.CreateExists}"))
+                creator.sendMessage(tc("${Messages.Prefix} ${Messages.CreateExists}"))
                 return
             }
 
             if (!name.matches(pattern)) {
-                creator.sendMessage(cMsg("${Messages.Prefix} ${Messages.CreateNoName}"))
+                creator.sendMessage(tc("${Messages.Prefix} ${Messages.CreateNoName}"))
                 return
             }
 
             if (!Rarities.contains(rar)) {
-                creator.sendMessage(cMsg("${Messages.Prefix} ${Messages.NoRarity}"))
+                creator.sendMessage(tc("${Messages.Prefix} ${Messages.NoRarity}"))
                 return
             }
 
@@ -72,7 +71,7 @@ class Card(
             Config.CARDS["Cards.$rar.$name.Has-Shiny-Version"] = hasShiny
             Config.CARDS["Cards.$rar.$name.Info"] = if (info.matches(pattern)) info else "None"
 
-            Config.cardsConfig.save()
+            Config.saveCardsConfig()
 
             Rarities[rarity]?.let {
                 it.cards.put(
@@ -90,7 +89,7 @@ class Card(
                 )
             }
 
-            creator.sendMessage(cMsg(
+            creator.sendMessage(tc(
                     "${Messages.Prefix} ${
                         Messages.CreateSuccess
                             .replaceFirst("%name%", name)

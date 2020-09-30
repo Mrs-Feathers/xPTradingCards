@@ -10,9 +10,9 @@ import it.forgottenworld.tradingcards.manager.CardManager
 import it.forgottenworld.tradingcards.manager.DeckManager.openDeck
 import it.forgottenworld.tradingcards.model.Card
 import it.forgottenworld.tradingcards.model.Deck
-import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.capitalizeFully
 import it.forgottenworld.tradingcards.util.printDebug
+import it.forgottenworld.tradingcards.util.tc
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
@@ -50,9 +50,9 @@ class PlayerListener : Listener {
 
         val serialized: MutableList<String?> = mutableListOf()
 
-        Decks[id]!![deckNum] = Deck(id, contents.mapNotNull {
+        Decks[id]!![deckNum] = Deck(contents.mapNotNull {
             if (it == null || it.type != General.CardMaterial) null
-            if (it.itemMeta?.hasDisplayName() == true) {
+            else if (it.itemMeta?.hasDisplayName() == true) {
 
                 val rarityName = ChatColor
                         .stripColor(it.itemMeta!!.lore!!.last())!!
@@ -60,7 +60,7 @@ class PlayerListener : Listener {
                 val rarity = Rarities[rarityName]!!
 
                 val cardName = Card.parseDisplayName(rarityName, it.itemMeta!!.displayName)
-                val card = rarity.cards[cardName]!!
+                val card = rarity.cards[cardName] ?: return@mapNotNull null
 
                 val isShiny = it.containsEnchantment(Enchantment.ARROW_INFINITE)
                 val shiny = if (isShiny) "yes" else "no"
@@ -75,7 +75,7 @@ class PlayerListener : Listener {
             }
         })
         Config.DECKS["Decks.Inventories.$id.$deckNum"] = serialized
-        Config.decksConfig.save()
+        Config.saveDecksConfig()
     }
 
     @EventHandler
@@ -84,31 +84,28 @@ class PlayerListener : Listener {
         val p = event.player
 
         fun doAfter() {
+            printDebug("[Cards] Deck material...")
             if (p.inventory.getItem(p.inventory.heldItemSlot)?.type
                     != General.DeckMaterial) return
 
-            printDebug("[Cards] Deck material...")
-            if (p.gameMode == GameMode.CREATIVE) return
-
             printDebug("[Cards] Not creative...")
-            if (p.inventory.getItem(p.inventory.heldItemSlot)
-                            ?.containsEnchantment(Enchantment.DURABILITY) != true) return
+            if (p.gameMode == GameMode.CREATIVE) return
 
             printDebug("[Cards] Has enchant...")
             if (p.inventory.getItem(p.inventory.heldItemSlot)
                             ?.getEnchantmentLevel(Enchantment.DURABILITY) != 10) return
 
             printDebug("[Cards] Enchant is level 10...")
-            val name = p.inventory.getItem(p.inventory.heldItemSlot)?.itemMeta!!.displayName
+            val name = p.inventory.getItem(p.inventory.heldItemSlot)?.itemMeta?.displayName ?: return
 
             p.openDeck(name.split("#")[1].toInt())
         }
 
         if (p.inventory.getItem(p.inventory.heldItemSlot)?.type == General.BoosterPackMaterial
-                && event.player.hasPermission("fwtc.openboosterpack")) {
+                && event.player.hasPermission("fwtradingcards.openboosterpack")) {
 
             if (p.gameMode == GameMode.CREATIVE) {
-                event.player.sendMessage(cMsg(
+                event.player.sendMessage(tc(
                         "${Messages.Prefix} ${Messages.NoCreative}"))
                 doAfter()
                 return
@@ -139,7 +136,7 @@ class PlayerListener : Listener {
             var extraCardAmount = 0
             if (hasExtra) extraCardAmount = ChatColor.stripColor(line3[0])!!.toInt()
 
-            p.sendMessage(cMsg("${Messages.Prefix} ${Messages.OpenBoosterPack}"))
+            p.sendMessage(tc("${Messages.Prefix} ${Messages.OpenBoosterPack}"))
 
             val normalRarity = Rarities[line1[1].capitalizeFully()] ?: return
             val specialRarity = Rarities[line2[1].capitalizeFully()] ?: return
@@ -212,9 +209,9 @@ class PlayerListener : Listener {
             General.PlayerOpRarity
         else
             Rarities.keys.find {
-                children["fwtc.rarity.$it"] = false
+                children["fwtradingcards.rarity.$it"] = false
                 TradingCards.permRarities.recalculatePermissibles()
-                p.hasPermission("fwtc.rarity.$it")
+                p.hasPermission("fwtradingcards.rarity.$it")
             } ?: General.AutoAddPlayerRarity
 
         if (cardsConfig.contains("Cards.$rarity.${p.name}")) return
@@ -229,7 +226,7 @@ class PlayerListener : Listener {
         cardsConfig["Cards.$rarity.${p.name}.Info"] = info
 
 
-        Config.cardsConfig.save()
+        Config.saveCardsConfig()
 
         Rarities[rarity]?.let {
             it.cards.put(

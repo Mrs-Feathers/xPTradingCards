@@ -6,7 +6,7 @@ import it.forgottenworld.tradingcards.data.DisplayNames
 import it.forgottenworld.tradingcards.data.General
 import it.forgottenworld.tradingcards.model.Card
 import it.forgottenworld.tradingcards.model.Rarity
-import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.util.tc
 import it.forgottenworld.tradingcards.util.wrapString
 import org.bukkit.ChatColor
 import org.bukkit.enchantments.Enchantment
@@ -19,7 +19,7 @@ object CardManager {
     private fun setCardItemStackDisplayName(itemStack: ItemStack, card: Card, isShiny: Boolean) {
         val meta = itemStack.itemMeta ?: return
         val shinyPrefix = if (isShiny) General.ShinyName else ""
-        meta.setDisplayName(cMsg(DisplayNames.ShinyTitle
+        meta.setDisplayName(tc(DisplayNames.ShinyTitle
                 .replaceFirst("%PREFIX%", General.CardPrefix)
                 .replaceFirst("%COLOUR%", card.rarity.color)
                 .replaceFirst("%NAME%", card.name)
@@ -32,21 +32,21 @@ object CardManager {
     private fun setCardItemStackLore(itemStack: ItemStack, card: Card, isShiny: Boolean) {
         val itemMeta = itemStack.itemMeta ?: return
 
-        itemMeta.lore = mutableListOf(cMsg("${Colors.Type}${DisplayNames.Type}: &f${card.type}")).apply {
+        itemMeta.lore = mutableListOf(tc("${Colors.Type}${DisplayNames.Type}: &f${card.type}")).apply {
 
             if (card.info == "None" || card.info == "")
-                add(cMsg("${Colors.Info}${DisplayNames.Info}: &f${card.info}"))
+                add(tc("${Colors.Info}${DisplayNames.Info}: &f${card.info}"))
             else {
-                add(cMsg("${Colors.Info}${DisplayNames.Info}:"))
+                add(tc("${Colors.Info}${DisplayNames.Info}:"))
                 addAll(wrapString(card.info))
             }
 
-            add(cMsg("${Colors.Series}${DisplayNames.Series}: &f${card.series}"))
+            add(tc("${Colors.Series}${DisplayNames.Series}: &f${card.series}"))
 
             if (card.about != "None")
-                    add(cMsg("${Colors.About}${DisplayNames.About}: &f${card.about}"))
+                    add(tc("${Colors.About}${DisplayNames.About}: &f${card.about}"))
 
-            add(cMsg("${Colors.Rarity}${ChatColor.BOLD}${if (isShiny) "${General.ShinyName} " else ""}${card.rarity.name}"))
+            add(tc("${Colors.Rarity}${ChatColor.BOLD}${if (isShiny) "${General.ShinyName} " else ""}${card.rarity.name}"))
         }
 
         if (General.HideEnchants)

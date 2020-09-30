@@ -7,6 +7,7 @@ import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scheduler.BukkitRunnable
 import java.io.File
 import java.io.IOException
 import java.util.logging.Level
@@ -84,14 +85,10 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
 
     companion object {
 
-        lateinit var pluginConfig: Config
-            private set
-        lateinit var decksConfig: Config
-            private set
-        lateinit var messagesConfig: Config
-            private set
-        lateinit var cardsConfig: Config
-            private set
+        private lateinit var pluginConfig: Config
+        private lateinit var decksConfig: Config
+        private lateinit var messagesConfig: Config
+        private lateinit var cardsConfig: Config
 
         val PLUGIN
             get() = pluginConfig.config!!
@@ -103,6 +100,30 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
             get() = messagesConfig.config!!
         val DEBUG
             get() = General.DebugMode
+
+        fun saveDecksConfig() {
+            object: BukkitRunnable() {
+                override fun run() {
+                    decksConfig.save()
+                }
+            }.runTaskAsynchronously(TradingCards.instance)
+        }
+
+        fun savePluginConfig() {
+            object: BukkitRunnable() {
+                override fun run() {
+                    pluginConfig.save()
+                }
+            }.runTaskAsynchronously(TradingCards.instance)
+        }
+
+        fun saveCardsConfig() {
+            object: BukkitRunnable() {
+                override fun run() {
+                    cardsConfig.save()
+                }
+            }.runTaskAsynchronously(TradingCards.instance)
+        }
 
         private fun reloadPluginConfig() {
             pluginConfig = Config("config.yml", TradingCards.instance)

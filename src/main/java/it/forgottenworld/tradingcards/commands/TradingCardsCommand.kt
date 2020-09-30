@@ -1,18 +1,18 @@
 package it.forgottenworld.tradingcards.commands
 
 import it.forgottenworld.tradingcards.TradingCards
+import it.forgottenworld.tradingcards.commands.subcommands.*
 import it.forgottenworld.tradingcards.data.General
 import it.forgottenworld.tradingcards.data.Messages
-import it.forgottenworld.tradingcards.util.cMsg
 import it.forgottenworld.tradingcards.util.formatTitle
+import it.forgottenworld.tradingcards.util.tc
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.command.Command
-import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
 
-class DefaultCommand : CommandExecutor, TabExecutor {
+class TradingCardsCommand : TabExecutor {
 
     data class UsageItem(
             val perm: String,
@@ -32,26 +32,23 @@ class DefaultCommand : CommandExecutor, TabExecutor {
             UsageItem("listpacks", Messages.ListPacksUsage, Messages.ListPacksHelp),
             UsageItem("toggle", Messages.ToggleUsage, Messages.ToggleHelp),
             UsageItem("create", Messages.CreateUsage, Messages.CreateHelp),
-            UsageItem("buy", "BuyUsage", Messages.BuyHelp, TradingCards.instance.hasVault),
+            UsageItem("buy", Messages.BuyUsage, Messages.BuyHelp, TradingCards.instance.hasVault),
             UsageItem("worth", Messages.WorthUsage, Messages.WorthHelp, TradingCards.instance.hasVault))
 
     private fun showUsage(sender: CommandSender) {
-
         val showUsage = General.ShowCommandUsage
 
-        sender.sendMessage(cMsg(formatTitle("${General.ServerName} Trading Cards")))
+        sender.sendMessage(tc(formatTitle("${General.ServerName} Trading Cards")))
 
         commandUsages
-                .filter { sender.hasPermission("fwtc.${it.perm}") }
+                .filter { sender.hasPermission("fwtradingcards.${it.perm}") }
                 .forEach {
-                    sender.sendMessage(cMsg("&7> &3${it.usage}"))
-
-                    if (showUsage)
-                        sender.sendMessage(cMsg("   &7- &f&o${it.help}"))
+                    sender.sendMessage(tc("&7> &3${it.usage}"))
+                    if (showUsage) sender.sendMessage(tc("   &7- &f&o${it.help}"))
                 }
     }
 
-    private val subCommands = setOf(
+    private val subCommands = listOf(
             "reload",
             "toggle",
             "create",
@@ -66,9 +63,6 @@ class DefaultCommand : CommandExecutor, TabExecutor {
             "worth",
             "credits",
             "buy")
-
-    override fun onTabComplete(sender: CommandSender, cmd: Command, label: String, args: Array<String>) =
-            subCommands.filter { it.startsWith(args[0]) }
 
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<String>): Boolean {
 
@@ -100,4 +94,11 @@ class DefaultCommand : CommandExecutor, TabExecutor {
         
     }
 
+    override fun onTabComplete(sender: CommandSender, cmd: Command, label: String, args: Array<String>) =
+            if (cmd.name.equals("fwtradingcards", ignoreCase = true) && sender is Player)
+                when (args.count()) {
+                    0 -> subCommands
+                    1 -> subCommands.filter { it.startsWith(args[0]) }
+                    else -> null
+                } else null
 }

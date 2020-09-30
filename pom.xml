@@ -115,8 +115,8 @@
                         </goals>
                         <configuration>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
-<!--                                <shadedArtifactAttached>true</shadedArtifactAttached>-->
-<!--                                <outputDirectory>/home/giacomo/paper/plugins</outputDirectory>-->
+<!--                            <shadedArtifactAttached>true</shadedArtifactAttached>-->
+<!--                            <outputDirectory>/home/giacomo/paper/plugins</outputDirectory>-->
                         </configuration>
                     </execution>
                 </executions>

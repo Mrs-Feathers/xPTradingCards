@@ -1,9 +1,9 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.data.Rarities
 import it.forgottenworld.tradingcards.manager.CardManager
-import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.util.tc
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -11,7 +11,7 @@ import org.bukkit.command.CommandSender
 
 fun cmdGiveaway(sender: CommandSender, args: Array<String>): Boolean {
 
-    if (!sender.hasPermission("fwtc.giveaway")) {
+    if (!sender.hasPermission("fwtradingcards.giveaway")) {
         tcMsg(sender, Messages.NoPerms)
         return true
     }
@@ -26,7 +26,7 @@ fun cmdGiveaway(sender: CommandSender, args: Array<String>): Boolean {
         return true
     }
 
-    Bukkit.broadcastMessage(cMsg(
+    Bukkit.broadcastMessage(tc(
             "${Messages.Prefix} ${
                 Messages.Giveaway
                         .replaceFirst("%player%", sender.name)

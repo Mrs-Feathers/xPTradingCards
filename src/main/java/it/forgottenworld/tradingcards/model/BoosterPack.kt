@@ -5,7 +5,7 @@ import it.forgottenworld.tradingcards.data.BoosterPacks
 import it.forgottenworld.tradingcards.data.Colors
 import it.forgottenworld.tradingcards.data.General
 import it.forgottenworld.tradingcards.data.Rarities
-import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.util.tc
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
@@ -49,22 +49,22 @@ class BoosterPack (
             val specialCardColour = Colors.BoosterPackSpecialCards
 
             boosterPack.itemMeta = boosterPack.itemMeta?.apply {
-                setDisplayName(cMsg("${General.BoosterPackPrefix}${Colors.BoosterPackName}${name.replace("_", " ")}"))
+                setDisplayName(tc("${General.BoosterPackPrefix}${Colors.BoosterPackName}${name.replace("_", " ")}"))
 
                 lore = listOfNotNull(
-                        cMsg(Colors.BoosterPackNormalCards +
+                        tc(Colors.BoosterPackNormalCards +
                                 data.numNormalCards +
                                 Colors.BoosterPackLore + " " +
                                 data.normalCardRarity.name.toUpperCase()),
                         if (hasExtraRarity)
-                            cMsg(
+                            tc(
                                     Colors.BoosterPackExtraCards +
                                             numExtraCards +
                                             Colors.BoosterPackLore + " " +
                                             extraRarity.toUpperCase())
                         else
                             null,
-                        cMsg(specialCardColour +
+                        tc(specialCardColour +
                                 data.numSpecialCards +
                                 Colors.BoosterPackLore + " " +
                                 data.specialCardRarity.name.toUpperCase()))

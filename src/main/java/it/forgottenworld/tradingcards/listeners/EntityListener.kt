@@ -25,17 +25,14 @@ class EntityListener : Listener {
         if (e.entity.killer !is Player) return
         val p = e.entity.killer as Player
 
-        if (Blacklist.WorldBlacklist.contains(p.world.name) || Blacklist.isPlayerBlacklisted(p) != Blacklist.WhitelistMode)
+        if (Blacklist.isWorldBlacklisted(p.world) || Blacklist.isPlayerBlacklisted(p) != Blacklist.WhitelistMode)
             return
 
         val rarity = if (Chances.BossDrop && isMobBoss(e.entityType)) Rarities[Chances.BossDropRarity] ?: return
         else Rarity.calculate(e.entityType, false) ?: return
 
-        if (General.SpawnerBlock
-                && e.entity.getMetadata("fromSpawner").firstOrNull()?.asBoolean() == true)
-            return
-
-        CardManager.getRandomCardItemStack(rarity).let { e.drops.add(it) }
+        if (!General.SpawnerBlock || e.entity.getMetadata("fromSpawner").firstOrNull()?.asBoolean() != true)
+            e.drops.add(CardManager.getRandomCardItemStack(rarity))
     }
 
     @EventHandler
@@ -43,7 +40,7 @@ class EntityListener : Listener {
 
         if (e.entity !is Mob ||
                 e.spawnReason != CreatureSpawnEvent.SpawnReason.SPAWNER ||
-                General.SpawnerBlock) return
+                !General.SpawnerBlock) return
 
         e.entity.setMetadata("fromSpawner", FixedMetadataValue(TradingCards.instance, true))
         e.entity.removeWhenFarAway = true

@@ -1,9 +1,9 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.manager.CardManager
 import it.forgottenworld.tradingcards.model.Rarity
-import it.forgottenworld.tradingcards.util.cMsg
+import it.forgottenworld.tradingcards.util.tc
 import it.forgottenworld.tradingcards.util.printDebug
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.Bukkit
@@ -13,7 +13,7 @@ import org.bukkit.entity.EntityType
 
 fun cmdGiveRandomCard(sender: CommandSender, args: Array<String>): Boolean {
 
-    if (!sender.hasPermission("fwtc.randomcard")) {
+    if (!sender.hasPermission("fwtradingcards.randomcard")) {
         tcMsg(sender, Messages.NoPerms)
         return true
     }
@@ -36,10 +36,10 @@ fun cmdGiveRandomCard(sender: CommandSender, args: Array<String>): Boolean {
         tcMsg(sender, Messages.GiveRandomCardMsg.replaceFirst("%player%", p!!.name))
 
         if (p.inventory.firstEmpty() != -1) {
-            p.sendMessage(cMsg("${Messages.Prefix} ${Messages.GiveRandomCard}"))
+            p.sendMessage(tc("${Messages.Prefix} ${Messages.GiveRandomCard}"))
             CardManager.getRandomCardItemStack(rare).let { p.inventory.addItem(it) }
         } else if (p.gameMode == GameMode.SURVIVAL) {
-            p.sendMessage(cMsg("${Messages.Prefix} ${Messages.GiveRandomCard}"))
+            p.sendMessage(tc("${Messages.Prefix} ${Messages.GiveRandomCard}"))
             CardManager.getRandomCardItemStack(rare).let { p.world.dropItem(p.location, it) }
         }
     } catch (e: IllegalArgumentException) {

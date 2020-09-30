@@ -1,14 +1,15 @@
-package it.forgottenworld.tradingcards.commands
+package it.forgottenworld.tradingcards.commands.subcommands
 
-import it.forgottenworld.tradingcards.manager.CardManager
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.data.Rarities
+import it.forgottenworld.tradingcards.manager.CardManager
 import it.forgottenworld.tradingcards.util.tcMsg
 import org.bukkit.entity.Player
 
-fun cmdGiveCard(p: Player, args: Array<String>): Boolean {
 
-    if (!p.hasPermission("fwtc.givecard")) {
+fun cmdGiveShinyCard(p: Player, args: Array<String>): Boolean {
+
+    if (!p.hasPermission("fwtradingcards.giveshinycard")) {
         tcMsg(p, Messages.NoPerms)
         return true
     }
@@ -19,7 +20,7 @@ fun cmdGiveCard(p: Player, args: Array<String>): Boolean {
     }
 
     Rarities[args[1]]?.cards?.get(args[2])
-            ?.let { p.inventory.addItem(CardManager.getCardItemStack(it, 1)) }
+            ?.let { p.inventory.addItem(CardManager.getCardItemStack(it, 1, true)) }
             ?: tcMsg(p, Messages.NoCard)
 
     return true
