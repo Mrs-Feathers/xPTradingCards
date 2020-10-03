@@ -3,7 +3,7 @@ package it.forgottenworld.tradingcards.data
 import it.forgottenworld.tradingcards.config.Config
 import it.forgottenworld.tradingcards.model.BoosterPack
 
-object BoosterPacks: Map<String, BoosterPack> {
+object BoosterPacks : Map<String, BoosterPack> {
 
     private var map = mutableMapOf<String, BoosterPack>()
 

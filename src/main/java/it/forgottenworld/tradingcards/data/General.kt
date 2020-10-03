@@ -5,12 +5,11 @@ import org.bukkit.Material
 
 
 object General {
-    
+
     lateinit var ServerName: String
-    var DebugMode: Boolean = false
-    var ShowCommandUsage: Boolean = true
-    var HideEnchants: Boolean = false
-    var AmericanMode: Boolean = false
+    var ShowCommandUsage = true
+    var HideEnchants = false
+    var AmericanMode = false
     lateinit var CardMaterial: Material
     lateinit var CardPrefix: String
     lateinit var BoosterPackMaterial: Material
@@ -18,32 +17,33 @@ object General {
     lateinit var DeckMaterial: Material
     lateinit var DeckPrefix: String
     lateinit var ShinyName: String
-    var ScheduleCards: Boolean = false
+    var ScheduleCards = false
     lateinit var ScheduleCardRarity: String
-    var ScheduleCardTimeInHours: Int = 1
-    var SpawnerBlock: Boolean = false
-    //lateinit var SpawnerMobName: String
-    var AutoAddPlayers: Boolean = false
+    var ScheduleCardTimeInHours = 1
+    var SpawnerBlock = false
+    var AutoAddPlayers = false
     lateinit var AutoAddPlayerRarity: String
     lateinit var PlayerOpRarity: String
     lateinit var PlayerSeries: String
     lateinit var PlayerType: String
-    var PlayerHasShinyVersion: Boolean = false
-    var PlayerDropsCard: Boolean = true
-    var PlayerDropsCardRarity: Int = 100
-    var InfoLineLength: Int = 25
+    var PlayerHasShinyVersion = false
+    var PlayerDropsCard = true
+    var PlayerDropsCardRarity = 100
+    var InfoLineLength = 25
+    var PersistenceInterval = 5
+
 
     fun load() {
-        with (Config.PLUGIN) {
+        with(Config.PLUGIN) {
 
             ServerName = getString("General.Server-Name") ?: "ERROR"
-            DebugMode = getBoolean("General.Debug-Mode", false)
             ShowCommandUsage = getBoolean("General.Show-Command-Usage", true)
             HideEnchants = getBoolean("General.Hide-Enchants", true)
             AmericanMode = getBoolean("General.American-Mode", false)
             CardMaterial = Material.getMaterial(getString("General.Card-Material") ?: "PAPER") ?: Material.PAPER
             CardPrefix = getString("General.Card-Prefix") ?: "ERROR"
-            BoosterPackMaterial = Material.getMaterial(getString("General.BoosterPack-Material") ?: "BOOK") ?: Material.BOOK
+            BoosterPackMaterial = Material.getMaterial(getString("General.BoosterPack-Material") ?: "BOOK")
+                    ?: Material.BOOK
             BoosterPackPrefix = getString("General.BoosterPack-Prefix") ?: "ERROR"
             DeckMaterial = Material.getMaterial(getString("General.Deck-Material") ?: "BOOK") ?: Material.BOOK
             DeckPrefix = getString("General.Deck-Prefix") ?: "ERROR"
@@ -52,7 +52,6 @@ object General {
             ScheduleCardRarity = getString("General.Schedule-Card-Rarity") ?: "ERROR"
             ScheduleCardTimeInHours = getInt("General.Schedule-Card-Time-In-Hours", 1)
             SpawnerBlock = getBoolean("General.Spawner-Block", true)
-            //SpawnerMobName = getString("General.Spawner-Mob-Name") ?: "ERROR"
             AutoAddPlayers = getBoolean("General.Auto-Add-Players", false)
             AutoAddPlayerRarity = getString("General.Auto-Add-Player-Rarity") ?: "ERROR"
             PlayerOpRarity = getString("General.Player-Op-Rarity") ?: "ERROR"
@@ -62,7 +61,8 @@ object General {
             PlayerDropsCard = getBoolean("General.Player-Drops-Card", false)
             PlayerDropsCardRarity = getInt("General.Player-Drops-Card-Rarity", 100)
             InfoLineLength = getInt("General.Info-Line-Length", 25)
+            PersistenceInterval = getInt("General.Persistence-Interval", 5)
         }
     }
-            
+
 }

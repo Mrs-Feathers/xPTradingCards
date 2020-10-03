@@ -4,7 +4,7 @@ import it.forgottenworld.tradingcards.config.Config
 import it.forgottenworld.tradingcards.model.Card
 import it.forgottenworld.tradingcards.model.Rarity
 
-object Rarities: Map<String, Rarity> {
+object Rarities : Map<String, Rarity> {
 
     private var map = mapOf<String, Rarity>()
 
@@ -16,7 +16,7 @@ object Rarities: Map<String, Rarity> {
                         getString("Rarities.$it.Colour") ?: "&7",
                         Chances.getRarityChances(it),
                         mutableMapOf()
-                ).apply { cards.putAll(getCardsForRarityFromConfig(this)) })
+                ).apply { putAll(getCardsForRarityFromConfig(this)) })
             }?.toMap() ?: mapOf()
         }
     }
@@ -37,7 +37,8 @@ object Rarities: Map<String, Rarity> {
                                     Config.CARDS.getDouble("Cards.${rarity.name}.$it.Buy-Price", 0.0)
                             )
                     )
-                }.toMap() }
+                }.toMap()
+            }
 
     override val entries: Set<Map.Entry<String, Rarity>>
         get() = map.entries

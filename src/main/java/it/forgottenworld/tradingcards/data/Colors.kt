@@ -14,9 +14,9 @@ object Colors {
     lateinit var BoosterPackNormalCards: String
     lateinit var BoosterPackSpecialCards: String
     lateinit var BoosterPackExtraCards: String
-    
+
     fun load() {
-        with (Config.PLUGIN) {
+        with(Config.PLUGIN) {
             Series = getString("Colours.Series") ?: "&a"
             Type = getString("Colours.Type") ?: "&b"
             Info = getString("Colours.Info") ?: "&e"

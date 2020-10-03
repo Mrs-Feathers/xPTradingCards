@@ -5,8 +5,8 @@ import it.forgottenworld.tradingcards.commands.subcommands.*
 import it.forgottenworld.tradingcards.data.General
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.util.formatTitle
-import it.forgottenworld.tradingcards.util.tc
-import it.forgottenworld.tradingcards.util.tcMsg
+import it.forgottenworld.tradingcards.util.tC
+import it.forgottenworld.tradingcards.util.sendPrefixedMessage
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
@@ -32,19 +32,19 @@ class TradingCardsCommand : TabExecutor {
             UsageItem("listpacks", Messages.ListPacksUsage, Messages.ListPacksHelp),
             UsageItem("toggle", Messages.ToggleUsage, Messages.ToggleHelp),
             UsageItem("create", Messages.CreateUsage, Messages.CreateHelp),
-            UsageItem("buy", Messages.BuyUsage, Messages.BuyHelp, TradingCards.instance.hasVault),
-            UsageItem("worth", Messages.WorthUsage, Messages.WorthHelp, TradingCards.instance.hasVault))
+            UsageItem("buy", Messages.BuyUsage, Messages.BuyHelp, TradingCards.economy != null),
+            UsageItem("worth", Messages.WorthUsage, Messages.WorthHelp, TradingCards.economy != null))
 
     private fun showUsage(sender: CommandSender) {
         val showUsage = General.ShowCommandUsage
 
-        sender.sendMessage(tc(formatTitle("${General.ServerName} Trading Cards")))
+        sender.sendMessage(tC(formatTitle("${General.ServerName} Trading Cards")))
 
         commandUsages
                 .filter { sender.hasPermission("fwtradingcards.${it.perm}") }
                 .forEach {
-                    sender.sendMessage(tc("&7> &3${it.usage}"))
-                    if (showUsage) sender.sendMessage(tc("   &7- &f&o${it.help}"))
+                    sender.sendMessage(tC("&7> &3${it.usage}"))
+                    if (showUsage) sender.sendMessage(tC("   &7- &f&o${it.help}"))
                 }
     }
 
@@ -71,7 +71,7 @@ class TradingCardsCommand : TabExecutor {
             return true
         }
 
-        return when(args[0].toLowerCase()) {
+        return when (args[0].toLowerCase()) {
             "reload" -> cmdReload(sender)
             "toggle" -> sender is Player && cmdToggle(sender)
             "create" -> sender is Player && cmdCreate(sender, args)
@@ -82,16 +82,16 @@ class TradingCardsCommand : TabExecutor {
             "giverandomcard" -> cmdGiveRandomCard(sender, args)
             "list" -> cmdList(sender)
             "listpacks" -> cmdListPacks(sender)
-            "giveaway"-> cmdGiveaway(sender, args)
+            "giveaway" -> cmdGiveaway(sender, args)
             "worth" -> sender is Player && cmdWorth(sender)
             "credits" -> cmdCredits(sender)
             "buy" -> sender is Player && cmdBuy(sender, args)
-            else -> { 
-                tcMsg(sender, Messages.NoCmd)
-                true 
+            else -> {
+                sendPrefixedMessage(sender, Messages.NoCmd)
+                true
             }
         }
-        
+
     }
 
     override fun onTabComplete(sender: CommandSender, cmd: Command, label: String, args: Array<String>) =

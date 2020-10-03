@@ -13,9 +13,8 @@ object Chances {
     lateinit var BossDropRarity: String
     var ShinyVersionChance = 1
 
-
-    fun load () {
-        with (Config.PLUGIN) {
+    fun load() {
+        with(Config.PLUGIN) {
             HostileChance = getInt("Chances.Hostile-Chance", 20)
             NeutralChance = getInt("Chances.Neutral-Chance", 5)
             PassiveChance = getInt("Chances.Passive-Chance", 1)

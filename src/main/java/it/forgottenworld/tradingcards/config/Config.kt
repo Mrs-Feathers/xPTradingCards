@@ -1,13 +1,14 @@
 package it.forgottenworld.tradingcards.config
 
 import it.forgottenworld.tradingcards.TradingCards
-import it.forgottenworld.tradingcards.data.General
+import it.forgottenworld.tradingcards.data.*
+import it.forgottenworld.tradingcards.util.bukkitTaskAsync
+import it.forgottenworld.tradingcards.util.bukkitTaskTimer
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scheduler.BukkitRunnable
 import java.io.File
 import java.io.IOException
 import java.util.logging.Level
@@ -98,31 +99,17 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
             get() = cardsConfig.config!!
         val MESSAGES
             get() = messagesConfig.config!!
-        val DEBUG
-            get() = General.DebugMode
 
-        fun saveDecksConfig() {
-            object: BukkitRunnable() {
-                override fun run() {
-                    decksConfig.save()
-                }
-            }.runTaskAsynchronously(TradingCards.instance)
+        private fun saveDecksConfig() {
+            bukkitTaskAsync { decksConfig.save() }
         }
 
-        fun savePluginConfig() {
-            object: BukkitRunnable() {
-                override fun run() {
-                    pluginConfig.save()
-                }
-            }.runTaskAsynchronously(TradingCards.instance)
+        private fun savePluginConfig() {
+            bukkitTaskAsync { pluginConfig.save() }
         }
 
-        fun saveCardsConfig() {
-            object: BukkitRunnable() {
-                override fun run() {
-                    cardsConfig.save()
-                }
-            }.runTaskAsynchronously(TradingCards.instance)
+        private fun saveCardsConfig() {
+            bukkitTaskAsync { cardsConfig.save() }
         }
 
         private fun reloadPluginConfig() {
@@ -141,16 +128,31 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
             cardsConfig = Config("cards.yml", TradingCards.instance)
         }
 
-        init {
-            reloadAllConfigs()
-        }
-
         fun reloadAllConfigs() {
             reloadPluginConfig()
             reloadDecksConfig()
             reloadMessagesConfig()
             reloadCardsConfig()
+
+            General.load()
+            PluginSupport.load()
+            Chances.load()
+            Rarities.load()
+            BoosterPacks.load()
+            Colors.load()
+            DisplayNames.load()
+            Blacklist.load()
+            Messages.load()
+            Decks.load()
+        }
+
+        fun schedulePersistence() {
+            val interval = General.PersistenceInterval * 20 * 60L
+            bukkitTaskTimer(interval, interval) {
+                saveDecksConfig()
+                savePluginConfig()
+                saveCardsConfig()
+            }
         }
     }
-
 }

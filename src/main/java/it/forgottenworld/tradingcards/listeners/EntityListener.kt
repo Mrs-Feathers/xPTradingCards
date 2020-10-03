@@ -8,7 +8,6 @@ import it.forgottenworld.tradingcards.data.Rarities
 import it.forgottenworld.tradingcards.manager.CardManager
 import it.forgottenworld.tradingcards.model.Rarity
 import it.forgottenworld.tradingcards.util.isMobBoss
-import it.forgottenworld.tradingcards.util.printDebug
 import org.bukkit.entity.Mob
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -32,7 +31,7 @@ class EntityListener : Listener {
         else Rarity.calculate(e.entityType, false) ?: return
 
         if (!General.SpawnerBlock || e.entity.getMetadata("fromSpawner").firstOrNull()?.asBoolean() != true)
-            e.drops.add(CardManager.getRandomCardItemStack(rarity))
+            e.drops.add(CardManager.createRandomCardItemStack(rarity))
     }
 
     @EventHandler
@@ -45,7 +44,6 @@ class EntityListener : Listener {
         e.entity.setMetadata("fromSpawner", FixedMetadataValue(TradingCards.instance, true))
         e.entity.removeWhenFarAway = true
 
-        printDebug("[Cards] Spawner mob renamed.")
     }
 
 }

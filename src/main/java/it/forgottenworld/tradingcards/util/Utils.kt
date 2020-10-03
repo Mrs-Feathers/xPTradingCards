@@ -1,11 +1,12 @@
 package it.forgottenworld.tradingcards.util
 
-import it.forgottenworld.tradingcards.config.Config
+import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.data.General
 import it.forgottenworld.tradingcards.data.Messages
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.EntityType
+import org.bukkit.scheduler.BukkitRunnable
 import kotlin.math.max
 
 enum class MobType { HOSTILE, PASSIVE, NEUTRAL, BOSS }
@@ -104,16 +105,12 @@ fun isMobNeutral(e: EntityType) = neutralMobs.contains(e)
 
 fun isMobPassive(e: EntityType) = passiveMobs.contains(e)
 
-fun tcMsg(sender: CommandSender, message: String) =
-        sender.sendMessage(tc("${Messages.Prefix} $message"))
-
-fun printDebug(msg: String) {
-    if (Config.DEBUG) println(msg)
-}
+fun sendPrefixedMessage(sender: CommandSender, message: String) =
+        sender.sendMessage(tC("${Messages.Prefix} $message"))
 
 fun isMobBoss(e: EntityType) = bossMobs.contains(e)
 
-fun tc(message: String) = ChatColor.translateAlternateColorCodes('&', message)
+fun tC(string: String) = ChatColor.translateAlternateColorCodes('&', string)
 
 fun wrapString(s: String): Collection<String> {
     var tail = ChatColor.stripColor(s) ?: return setOf()
@@ -125,10 +122,10 @@ fun wrapString(s: String): Collection<String> {
         tail = tail.drop(General.InfoLineLength)
         val i = head.lastIndexOf(' ')
 
-        if (i <= th || i == -1) {
-            res.add(tc("&f &7- &f$head"))
-        } else {
-            res.add(tc("&f &7- &f${head.take(i)}"))
+        if (i <= th)
+            res.add(tC("&f &7- &f$head"))
+        else {
+            res.add(tC("&f &7- &f${head.take(i)}"))
             tail = head.substring(i + 1) + tail
         }
     }
@@ -145,3 +142,13 @@ fun formatTitle(title: String): String {
 }
 
 fun String.capitalizeFully() = split(" ").joinToString(" ") { it.toLowerCase().capitalize() }
+
+inline fun bukkitTaskAsync(crossinline action: (BukkitRunnable.() -> Unit)) =
+    object : BukkitRunnable() {
+        override fun run() = action()
+    }.runTaskAsynchronously(TradingCards.instance)
+
+inline fun bukkitTaskTimer(delay: Long, interval: Long, crossinline action: (BukkitRunnable.() -> Unit)) =
+    object : BukkitRunnable() {
+        override fun run() = action()
+    }.runTaskTimer(TradingCards.instance, delay, interval)

@@ -17,16 +17,13 @@ object Blacklist {
     }
 
     fun addPlayer(player: Player) {
-        players.add(player.name)
-        Config.PLUGIN.set("Blacklist.Players", players)
-        Config.savePluginConfig()
+        if (players.add(player.name))
+            Config.PLUGIN.set("Blacklist.Players", players)
     }
 
     fun removePlayer(player: Player) {
-        if (players.remove(player.name)) {
+        if (players.remove(player.name))
             Config.PLUGIN.set("Blacklist.Players", players)
-            Config.savePluginConfig()
-        }
     }
 
     fun isPlayerBlacklisted(player: Player) = players.contains(player.name)

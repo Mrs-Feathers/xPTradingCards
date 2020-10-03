@@ -14,14 +14,15 @@ object Decks : MutableMap<UUID, MutableMap<Int, Deck>> {
             val uuid = UUID.fromString(it)
             Pair(
                     uuid,
-                    Config.DECKS.getConfigurationSection("Decks.Inventories.$it")!!
-                            .getKeys(false)
-                            .map { n ->
-                                Pair(n.toInt(), Deck.deserialize(Config.DECKS.getStringList("Decks.Inventories.$it.$n"))) }
-                            .toMap()
-                            .toMutableMap()
+                    Config.DECKS.getConfigurationSection("Decks.Inventories.$it")
+                            ?.getKeys(false)
+                            ?.map { n ->
+                                Pair(n.toInt(), Deck.deserialize(Config.DECKS.getStringList("Decks.Inventories.$it.$n")))
+                            }
+                            ?.toMap()
+                            ?.toMutableMap() ?: mutableMapOf()
             )
-        }!!.toMap())
+        }?.toMap() ?: return)
     }
 
     override val entries: MutableSet<MutableMap.MutableEntry<UUID, MutableMap<Int, Deck>>>

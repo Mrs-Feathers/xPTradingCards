@@ -1,8 +1,8 @@
 General:
   # Server name?
   Server-Name: 'Server'
-  # Show debug messages?
-  Debug-Mode: false
+  # How many minutes between each config save
+  Persistence-Interval: 5
   # Should we show the command usage in /xptc? (what the command does)
   Show-Command-Usage: true
   # If your server is not running the latest MC version, set this to FALSE
@@ -29,8 +29,6 @@ General:
   Schedule-Card-Time-In-Hours: 1
   # Should we block cards for mobs from monster spawners?
   Spawner-Block: true
-  # In the case of 'true', what should we name the monster with to identify it's from a spawner?
-  # Spawner-Mob-Name: 'Spawned Mob'
   # Should we automatically add players as cards?
   Auto-Add-Players: false
   Auto-Add-Player-Rarity: Common
@@ -60,7 +58,7 @@ PluginSupport:
     # Is the server running a closed economy? if so, whose account should money go into?
     Closed-Economy: true
     # UUID, not the username
-    Server-Account: TradingCards-Bank
+    Server-Account: PUT-THE-UUID-HERE
 
 BoosterPacks:
   Starter_Pack:
@@ -156,8 +154,7 @@ DisplayNames:
     # %COLOUR% (rarity colour)
     # %NAME% (card name)
     # %COST% (card buy-price)
-    Title: '%PREFIX%%COLOUR%%NAME%'
-    ShinyTitle: '%PREFIX%%COLOUR%%SHINYPREFIX% %NAME%'
+    Title: '%PREFIX%%COLOUR%%SHINYPREFIX% %NAME%'
     Series: 'Series'
     Type: 'Type'
     Info: 'Info'

@@ -3,8 +3,8 @@ package it.forgottenworld.tradingcards.commands.subcommands
 import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.data.Rarities
 import it.forgottenworld.tradingcards.manager.CardManager
-import it.forgottenworld.tradingcards.util.tc
-import it.forgottenworld.tradingcards.util.tcMsg
+import it.forgottenworld.tradingcards.util.tC
+import it.forgottenworld.tradingcards.util.sendPrefixedMessage
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.command.CommandSender
@@ -12,21 +12,21 @@ import org.bukkit.command.CommandSender
 fun cmdGiveaway(sender: CommandSender, args: Array<String>): Boolean {
 
     if (!sender.hasPermission("fwtradingcards.giveaway")) {
-        tcMsg(sender, Messages.NoPerms)
+        sendPrefixedMessage(sender, Messages.NoPerms)
         return true
     }
 
     if (args.size <= 1) {
-        tcMsg(sender, Messages.GiveawayUsage)
+        sendPrefixedMessage(sender, Messages.GiveawayUsage)
         return true
     }
 
     if (!Rarities.contains(args[1])) {
-        tcMsg(sender, Messages.NoRarity)
+        sendPrefixedMessage(sender, Messages.NoRarity)
         return true
     }
 
-    Bukkit.broadcastMessage(tc(
+    Bukkit.broadcastMessage(tC(
             "${Messages.Prefix} ${
                 Messages.Giveaway
                         .replaceFirst("%player%", sender.name)
@@ -34,11 +34,11 @@ fun cmdGiveaway(sender: CommandSender, args: Array<String>): Boolean {
             }"))
 
     for (p in Bukkit.getOnlinePlayers()) {
-        val card = Rarities[args[1]]!!.cards.values.random()
+        val card = Rarities[args[1]]!!.values.random()
         if (p.inventory.firstEmpty() != -1)
-            p.inventory.addItem(CardManager.getCardItemStack(card, 1))
+            p.inventory.addItem(CardManager.createCardItemStack(card, 1))
         else if (p.gameMode == GameMode.SURVIVAL)
-            p.world.dropItem(p.location, CardManager.getCardItemStack(card, 1))
+            p.world.dropItem(p.location, CardManager.createCardItemStack(card, 1))
     }
 
     return true

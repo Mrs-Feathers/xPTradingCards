@@ -67,10 +67,11 @@ object Messages {
     lateinit var ToggleHelp: String
     lateinit var ListPacksUsage: String
     lateinit var ListPacksHelp: String
-    
+
+
     fun load() {
         val config = Config.MESSAGES
-        
+
         Prefix = config.getString("Messages.Prefix") ?: "ERROR"
         Reload = config.getString("Messages.Reload") ?: "ERROR"
         NoCard = config.getString("Messages.NoCard") ?: "ERROR"

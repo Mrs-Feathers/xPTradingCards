@@ -1,7 +1,7 @@
 name: FWTradingCards
 main: it.forgottenworld.tradingcards.TradingCards
 api-version: "1.16"
-version: "1.4.1"
+version: "1.4.2"
 softdepend: [ Vault ]
 
 commands:
@@ -14,14 +14,14 @@ commands:
 
 permissions:
   fwtradingcards.fwtradingcards:
-      description: All commands.
-      default: true
+    description: All commands.
+    default: true
   fwtradingcards.reload:
-      description: Reload.
-      default: op
+    description: Reload.
+    default: op
   fwtradingcards.givecard:
-      description: Give a specific card.
-      default: op
+    description: Give a specific card.
+    default: op
   fwtradingcards.giveshinycard:
     description: Give a specific shiny card.
     default: op

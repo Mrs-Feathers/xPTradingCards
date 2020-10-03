@@ -7,7 +7,7 @@ import it.forgottenworld.tradingcards.data.PluginSupport
 import it.forgottenworld.tradingcards.data.Rarities
 import it.forgottenworld.tradingcards.manager.CardManager
 import it.forgottenworld.tradingcards.model.BoosterPack
-import it.forgottenworld.tradingcards.util.tcMsg
+import it.forgottenworld.tradingcards.util.sendPrefixedMessage
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.command.CommandSender
@@ -16,43 +16,43 @@ import org.bukkit.entity.Player
 private fun cmdBuyCard(args: Array<String>, sender: CommandSender, p: Player): Boolean {
 
     if (args.size <= 2) {
-        tcMsg(sender, Messages.ChooseRarity)
+        sendPrefixedMessage(sender, Messages.ChooseRarity)
         return true
     }
 
     if (args.size <= 3) {
-        tcMsg(sender, Messages.ChooseCard)
+        sendPrefixedMessage(sender, Messages.ChooseCard)
         return true
     }
 
-    val card = Rarities[args[2]]?.cards?.get(args[3])
+    val card = Rarities[args[2]]?.get(args[3])
     if (card == null) {
-        tcMsg(sender, Messages.CardDoesntExist)
+        sendPrefixedMessage(sender, Messages.CardDoesntExist)
         return true
     }
 
     if (card.price <= 0.0) {
-        tcMsg(sender, Messages.CannotBeBought)
+        sendPrefixedMessage(sender, Messages.CannotBeBought)
         return true
     }
 
-    if (TradingCards.econ!!.getBalance(p) < card.price) {
-        tcMsg(sender, Messages.NotEnoughMoney)
+    if (TradingCards.economy!!.getBalance(p) < card.price) {
+        sendPrefixedMessage(sender, Messages.NotEnoughMoney)
         return true
     }
 
     if (PluginSupport.Vault.ClosedEconomy) {
-        TradingCards.econ?.withdrawPlayer(p, card.price)
-        TradingCards.econ?.depositPlayer(Bukkit.getOfflinePlayer(PluginSupport.Vault.ServerAccount), card.price)
+        TradingCards.economy?.withdrawPlayer(p, card.price)
+        TradingCards.economy?.depositPlayer(Bukkit.getOfflinePlayer(PluginSupport.Vault.ServerAccount), card.price)
     } else
-        TradingCards.econ?.withdrawPlayer(p, card.price)
+        TradingCards.economy?.withdrawPlayer(p, card.price)
 
     if (p.inventory.firstEmpty() != -1)
-        p.inventory.addItem(CardManager.getCardItemStack(card, 1))
+        p.inventory.addItem(CardManager.createCardItemStack(card, 1))
     else if (p.gameMode == GameMode.SURVIVAL)
-        p.world.dropItem(p.location, CardManager.getCardItemStack(card, 1))
+        p.world.dropItem(p.location, CardManager.createCardItemStack(card, 1))
 
-    tcMsg(sender, Messages.BoughtCard.replaceFirst("%amount%", card.price.toString()))
+    sendPrefixedMessage(sender, Messages.BoughtCard.replaceFirst("%amount%", card.price.toString()))
 
     return true
 }
@@ -60,57 +60,57 @@ private fun cmdBuyCard(args: Array<String>, sender: CommandSender, p: Player): B
 private fun cmdBuyPack(args: Array<String>, sender: CommandSender, p: Player): Boolean {
 
     if (args.size <= 2) {
-        tcMsg(sender, Messages.ChoosePack)
+        sendPrefixedMessage(sender, Messages.ChoosePack)
         return true
     }
 
     val pack = BoosterPacks[args[2]]
 
     if (pack == null) {
-        tcMsg(sender, Messages.PackDoesntExist)
+        sendPrefixedMessage(sender, Messages.PackDoesntExist)
         return true
     }
 
     if (pack.price <= 0.0) {
-        tcMsg(sender, Messages.CannotBeBought)
+        sendPrefixedMessage(sender, Messages.CannotBeBought)
         return true
     }
 
-    if (TradingCards.econ!!.getBalance(p) < pack.price) {
-        tcMsg(sender, Messages.NotEnoughMoney)
+    if (TradingCards.economy!!.getBalance(p) < pack.price) {
+        sendPrefixedMessage(sender, Messages.NotEnoughMoney)
         return true
     }
 
     if (PluginSupport.Vault.ClosedEconomy) {
-        TradingCards.econ?.withdrawPlayer(p, pack.price)
-        TradingCards.econ
+        TradingCards.economy?.withdrawPlayer(p, pack.price)
+        TradingCards.economy
                 ?.depositPlayer(Bukkit.getOfflinePlayer(PluginSupport.Vault.ServerAccount), pack.price)
 
-    } else TradingCards.econ?.withdrawPlayer(p, pack.price)
+    } else TradingCards.economy?.withdrawPlayer(p, pack.price)
 
     if (p.inventory.firstEmpty() != -1)
         p.inventory.addItem(BoosterPack.getItemStack(args[2]))
     else if (p.gameMode == GameMode.SURVIVAL)
         p.world.dropItem(p.location, BoosterPack.getItemStack(args[2]))
 
-    tcMsg(sender, Messages.BoughtCard.replaceFirst("%amount%", pack.price.toString()))
+    sendPrefixedMessage(sender, Messages.BoughtCard.replaceFirst("%amount%", pack.price.toString()))
     return true
 }
 
 fun cmdBuy(p: Player, args: Array<String>): Boolean {
 
     if (!p.hasPermission("fwtradingcards.buy")) {
-        tcMsg(p, Messages.NoPerms)
+        sendPrefixedMessage(p, Messages.NoPerms)
         return true
     }
 
-    if (!TradingCards.instance.hasVault) {
-        tcMsg(p, Messages.NoVault)
+    if (TradingCards.economy == null) {
+        sendPrefixedMessage(p, Messages.NoVault)
         return true
     }
 
     if (args.size <= 1) {
-        tcMsg(p, Messages.BuyUsage)
+        sendPrefixedMessage(p, Messages.BuyUsage)
         return true
     }
 
@@ -118,7 +118,7 @@ fun cmdBuy(p: Player, args: Array<String>): Boolean {
         "pack" -> cmdBuyPack(args, p, p)
         "card" -> cmdBuyCard(args, p, p)
         else -> {
-            tcMsg(p, Messages.BuyUsage)
+            sendPrefixedMessage(p, Messages.BuyUsage)
             true
         }
     }
