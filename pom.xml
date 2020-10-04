@@ -95,9 +95,9 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-<!--                            <shadedArtifactAttached>false</shadedArtifactAttached>-->
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <outputDirectory>/home/giacomo/paper/plugins</outputDirectory>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+<!--                            <shadedArtifactAttached>true</shadedArtifactAttached>-->
+<!--                            <outputDirectory>/home/giacomo/paper/plugins</outputDirectory>-->
                         </configuration>
                     </execution>
                 </executions>
