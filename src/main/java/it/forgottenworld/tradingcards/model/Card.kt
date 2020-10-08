@@ -20,7 +20,8 @@ class Card(
         val about: String,
         val type: String,
         val info: String,
-        val price: Double) {
+        val price: Double,
+        val image: String) {
 
     val isShiny
         get() = hasShinyVersion && Random.nextInt(100) + 1 <= Chances.ShinyVersionChance
@@ -82,7 +83,8 @@ class Card(
                                 "None",
                                 type,
                                 info,
-                                0.0
+                                0.0,
+                                ""
                         )
             }
 
@@ -117,6 +119,7 @@ class Card(
             Config.CARDS["Cards.${rarity.name}.$serializedCardName.Type"] = General.PlayerType
             Config.CARDS["Cards.${rarity.name}.$serializedCardName.Has-Shiny-Version"] = General.PlayerHasShinyVersion
             Config.CARDS["Cards.${rarity.name}.$serializedCardName.Info"] = info
+            Config.CARDS["Cards.${rarity.name}.$serializedCardName.Image"] = ""  //TODO prendere la foto dell'utente da qualche rest api
 
             rarity[serializedCardName] = Card(
                     player.name,
@@ -126,7 +129,8 @@ class Card(
                     "None",
                     General.PlayerType,
                     info,
-                    0.0
+                    0.0,
+                    ""
             )
         }
     }

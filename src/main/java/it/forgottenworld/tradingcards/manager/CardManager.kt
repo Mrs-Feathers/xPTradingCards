@@ -6,14 +6,19 @@ import it.forgottenworld.tradingcards.data.DisplayNames
 import it.forgottenworld.tradingcards.data.General
 import it.forgottenworld.tradingcards.model.Card
 import it.forgottenworld.tradingcards.model.Rarity
+import it.forgottenworld.tradingcards.util.MapRenderer
 import it.forgottenworld.tradingcards.util.tC
 import it.forgottenworld.tradingcards.util.wrapString
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.Damageable
+import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataType
+import javax.imageio.ImageIO
 
 object CardManager {
 
@@ -71,8 +76,22 @@ object CardManager {
                 val isShiny = forcedShiny || card.isShiny
                 setCardItemStackDisplayName(this, card, isShiny)
                 setCardItemStackLore(this, card, isShiny)
+                setCardRenderer(this, card)
             }
 
     fun createRandomCardItemStack(rarity: Rarity) =
             createCardItemStack(rarity.values.random(), 1)
+
+    private fun setCardRenderer(itemStack: ItemStack, card: Card){
+        val image = ImageIO.read(this.javaClass.getResource(TradingCards.instance.dataFolder.toString() + "/images/" + card.image))
+        if(image != null){
+            val mapView = Bukkit.getWorld(General.MainWorldName)?.let { Bukkit.createMap(it) }
+            mapView?.addRenderer(MapRenderer(image,false))
+            val itemMeta = itemStack.itemMeta as Damageable
+            if (mapView != null) {
+                itemMeta.damage = mapView.id
+            }
+            itemStack.setItemMeta(itemMeta as ItemMeta)
+        }
+    }
 }
