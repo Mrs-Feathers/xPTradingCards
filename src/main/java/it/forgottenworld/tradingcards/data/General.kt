@@ -41,7 +41,7 @@ object General {
             ShowCommandUsage = getBoolean("General.Show-Command-Usage", true)
             HideEnchants = getBoolean("General.Hide-Enchants", true)
             AmericanMode = getBoolean("General.American-Mode", false)
-            CardMaterial = Material.getMaterial(getString("General.Card-Material") ?: "MAP") ?: Material.MAP
+            CardMaterial = Material.getMaterial(getString("General.Card-Material") ?: "FILLED_MAP") ?: Material.FILLED_MAP
             CardPrefix = getString("General.Card-Prefix") ?: "ERROR"
             BoosterPackMaterial = Material.getMaterial(getString("General.BoosterPack-Material") ?: "BOOK")
                     ?: Material.BOOK

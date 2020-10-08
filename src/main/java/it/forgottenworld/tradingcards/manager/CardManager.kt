@@ -17,7 +17,9 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.ItemMeta
+import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.persistence.PersistentDataType
+import java.io.File
 import javax.imageio.ImageIO
 
 object CardManager {
@@ -83,15 +85,18 @@ object CardManager {
             createCardItemStack(rarity.values.random(), 1)
 
     private fun setCardRenderer(itemStack: ItemStack, card: Card){
-        val image = ImageIO.read(this.javaClass.getResource(TradingCards.instance.dataFolder.toString() + "/images/" + card.image))
-        if(image != null){
-            val mapView = Bukkit.getWorld(General.MainWorldName)?.let { Bukkit.createMap(it) }
-            mapView?.addRenderer(MapRenderer(image,false))
-            val itemMeta = itemStack.itemMeta as Damageable
-            if (mapView != null) {
-                itemMeta.damage = mapView.id
+        if(!card.image.equals("")){
+            System.out.println(TradingCards.instance.dataFolder.path.toString() + "/images/" + card.image)
+            val image = ImageIO.read(File(TradingCards.instance.dataFolder,"/images/" + card.image))
+            if(image != null){
+                val mapView = Bukkit.getWorld(General.MainWorldName)?.let { Bukkit.createMap(it) }
+                mapView?.addRenderer(MapRenderer(image,false))
+                val itemMeta = itemStack.itemMeta as MapMeta
+                if (mapView != null) {
+                    itemMeta.mapView = mapView
+                }
+                itemStack.setItemMeta(itemMeta as ItemMeta)
             }
-            itemStack.setItemMeta(itemMeta as ItemMeta)
         }
     }
 }

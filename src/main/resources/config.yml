@@ -42,6 +42,7 @@ General:
   Player-Drops-Card-Rarity: 100
   # How 'long' should each line of the card's info be?
   Info-Line-Length: 25
+  MainWorldName: 'world'
 
 World-Blacklist:
   # Don't want cards dropping in certain worlds? Add it here!

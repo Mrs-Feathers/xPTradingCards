@@ -35,7 +35,7 @@ object Rarities : Map<String, Rarity> {
                                     getString("Cards.${rarity.name}.$it.Type")!!,
                                     getString("Cards.${rarity.name}.$it.Info")!!,
                                     Config.CARDS.getDouble("Cards.${rarity.name}.$it.Buy-Price", 0.0),
-                                    getString("Cards.${rarity.name}.$it.Image")!!
+                                    getString("Cards.${rarity.name}.$it.Image", "") ?: ""
                             )
                     )
                 }.toMap()
