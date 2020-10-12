@@ -45,7 +45,7 @@ class Card(
         }
         if(mapViewId == -1){
             mapViewId = Bukkit.getWorld(General.MainWorldName)?.let { Bukkit.createMap(it).id }!!
-            Config.CARDS.set("Cards.$rarity.$name.mapId",mapViewId)
+            Config.CARDS.set("Cards.${rarity.name}.$name.mapId",mapViewId)
             Config.schedulePersistence()
         }
     }
