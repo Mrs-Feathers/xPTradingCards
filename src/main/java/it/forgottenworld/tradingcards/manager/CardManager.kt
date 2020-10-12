@@ -84,7 +84,11 @@ object CardManager {
             createCardItemStack(rarity.values.random(), 1)
 
     private fun setCardRenderer(itemStack: ItemStack, card: Card) {
-        val mapView = Bukkit.getWorld(General.MainWorldName)?.let { Bukkit.getMap(card.mapViewId) }
+        val mapView = Bukkit.getWorld(General.MainWorldName)?.let {
+            @Suppress("DEPRECATION")
+            //Reason: https://www.spigotmc.org/threads/getmap-in-1-13.333754/#post-3115997
+            Bukkit.getMap(card.mapViewId)
+        }
         mapView?.addRenderer(MapRenderer(card.image, false))
         val itemMeta = itemStack.itemMeta as MapMeta
         itemMeta.persistentDataContainer.set(NamespacedKey(TradingCards.instance,"name"), PersistentDataType.STRING,card.name)

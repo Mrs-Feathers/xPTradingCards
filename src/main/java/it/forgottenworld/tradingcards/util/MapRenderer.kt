@@ -11,9 +11,8 @@ class MapRenderer(val image: BufferedImage, contextual: Boolean) : MapRenderer(c
     var alreadyRendered: Boolean = false
 
     override fun render(mapView: MapView, mapCanvas: MapCanvas, player: Player) {
-        if(!alreadyRendered){
-            mapCanvas.drawImage(0, 0, image)
-            alreadyRendered = true
-        }
+        if (alreadyRendered) return
+        mapCanvas.drawImage(0, 0, image)
+        alreadyRendered = true
     }
 }

@@ -82,43 +82,46 @@ class PlayerListener : Listener {
     @EventHandler
     fun onItemSwitch(e: PlayerItemHeldEvent){
         val itemStack = e.player.inventory.itemInMainHand
-        if(itemStack.type == Material.FILLED_MAP){
-            val itemMeta = itemStack.itemMeta
-            if(itemMeta != null){
-                val rarity = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"rarity"), PersistentDataType.STRING)
-                val name = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"name"), PersistentDataType.STRING)
-                val card = Rarities[rarity]?.get(name)
-                val mapMeta = itemMeta as MapMeta
-                val mapView = card?.mapViewId?.let { Bukkit.getMap(it) }
-                mapView?.renderers?.clear()
-                card?.image?.let { MapRenderer(it,false) }?.let { mapView?.addRenderer(it) }
-                mapMeta.mapView = mapView
-                itemStack.setItemMeta(mapMeta)
-                e.player.updateInventory()
-            }
+        if (itemStack.type != Material.FILLED_MAP) return
+        val itemMeta = itemStack.itemMeta
+        if (itemMeta == null) return
+        val rarity = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"rarity"), PersistentDataType.STRING)
+        val name = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"name"), PersistentDataType.STRING)
+        val card = Rarities[rarity]?.get(name)
+        val mapMeta = itemMeta as MapMeta
+        val mapView = card?.mapViewId?.let {
+            @Suppress("DEPRECATION")
+            //Reason: https://www.spigotmc.org/threads/getmap-in-1-13.333754/#post-3115997
+            Bukkit.getMap(it)
         }
+        mapView?.renderers?.clear()
+        card?.image?.let { MapRenderer(it,false) }?.let { mapView?.addRenderer(it) }
+        mapMeta.mapView = mapView
+        itemStack.setItemMeta(mapMeta)
+        e.player.updateInventory()
     }
 
     @EventHandler
     fun onItemSwap(e: InventoryClickEvent){
-        if(e.whoClicked is Player){
-            val player = e.whoClicked as Player
-            val itemStack = player.inventory.itemInMainHand
-            if(itemStack.type == Material.FILLED_MAP){
-                val itemMeta = itemStack.itemMeta
-                if(itemMeta != null){
-                    val rarity = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"rarity"), PersistentDataType.STRING)
-                    val name = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"name"), PersistentDataType.STRING)
-                    val card = Rarities[rarity]?.get(name)
-                    val mapMeta = itemMeta as MapMeta
-                    val mapView = card?.mapViewId?.let { Bukkit.getMap(it) }
-                    mapView?.renderers?.clear()
-                    card?.image?.let { MapRenderer(it,false) }?.let { mapView?.addRenderer(it) }
-                    mapMeta.mapView = mapView
-                    itemStack.setItemMeta(mapMeta)
-                    player.updateInventory()
-                }
-            }
+        if (e.whoClicked !is Player) return
+        val player = e.whoClicked as Player
+        val itemStack = player.inventory.itemInMainHand
+        if (itemStack.type != Material.FILLED_MAP) return
+        val itemMeta = itemStack.itemMeta
+        if (itemMeta == null) return
+        val rarity = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"rarity"), PersistentDataType.STRING)
+        val name = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"name"), PersistentDataType.STRING)
+        val card = Rarities[rarity]?.get(name)
+        val mapMeta = itemMeta as MapMeta
+        val mapView = card?.mapViewId?.let {
+            @Suppress("DEPRECATION")
+            //Reason: https://www.spigotmc.org/threads/getmap-in-1-13.333754/#post-3115997
+            Bukkit.getMap(it)
         }
+        mapView?.renderers?.clear()
+        card?.image?.let { MapRenderer(it,false) }?.let { mapView?.addRenderer(it) }
+        mapMeta.mapView = mapView
+        itemStack.setItemMeta(mapMeta)
+        player.updateInventory()
     }
 }
