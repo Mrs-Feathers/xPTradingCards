@@ -8,15 +8,23 @@ import it.forgottenworld.tradingcards.model.BoosterPack.Companion.tryOpenBooster
 import it.forgottenworld.tradingcards.model.Card
 import it.forgottenworld.tradingcards.model.Deck.Companion.tryOpenDeck
 import it.forgottenworld.tradingcards.model.Deck.Companion.trySaveDeck
+import it.forgottenworld.tradingcards.util.MapRenderer
+import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.NamespacedKey
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.inventory.CraftItemEvent
+import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.persistence.PersistentDataType
 import kotlin.random.Random
 
@@ -69,5 +77,48 @@ class PlayerListener : Listener {
                             ?.persistentDataContainer
                             ?.has(NamespacedKey(TradingCards.instance, "uncraftable"), PersistentDataType.BYTE) == true
                 }) e.isCancelled = true
+    }
+
+    @EventHandler
+    fun onItemSwitch(e: PlayerItemHeldEvent){
+        val itemStack = e.player.inventory.itemInMainHand
+        if(itemStack.type == Material.FILLED_MAP){
+            val itemMeta = itemStack.itemMeta
+            if(itemMeta != null){
+                val rarity = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"rarity"), PersistentDataType.STRING)
+                val name = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"name"), PersistentDataType.STRING)
+                val card = Rarities[rarity]?.get(name)
+                val mapMeta = itemMeta as MapMeta
+                val mapView = card?.mapViewId?.let { Bukkit.getMap(it) }
+                mapView?.renderers?.clear()
+                card?.image?.let { MapRenderer(it,false) }?.let { mapView?.addRenderer(it) }
+                mapMeta.mapView = mapView
+                itemStack.setItemMeta(mapMeta)
+                e.player.updateInventory()
+            }
+        }
+    }
+
+    @EventHandler
+    fun onItemSwap(e: InventoryClickEvent){
+        if(e.whoClicked is Player){
+            val player = e.whoClicked as Player
+            val itemStack = player.inventory.itemInMainHand
+            if(itemStack.type == Material.FILLED_MAP){
+                val itemMeta = itemStack.itemMeta
+                if(itemMeta != null){
+                    val rarity = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"rarity"), PersistentDataType.STRING)
+                    val name = itemMeta.persistentDataContainer.get(NamespacedKey(TradingCards.instance,"name"), PersistentDataType.STRING)
+                    val card = Rarities[rarity]?.get(name)
+                    val mapMeta = itemMeta as MapMeta
+                    val mapView = card?.mapViewId?.let { Bukkit.getMap(it) }
+                    mapView?.renderers?.clear()
+                    card?.image?.let { MapRenderer(it,false) }?.let { mapView?.addRenderer(it) }
+                    mapMeta.mapView = mapView
+                    itemStack.setItemMeta(mapMeta)
+                    player.updateInventory()
+                }
+            }
+        }
     }
 }

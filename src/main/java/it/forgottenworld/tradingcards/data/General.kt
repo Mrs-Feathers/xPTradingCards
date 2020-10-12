@@ -31,6 +31,7 @@ object General {
     var PlayerDropsCardRarity = 100
     var InfoLineLength = 25
     var PersistenceInterval = 5
+    lateinit var MainWorldName: String
 
 
     fun load() {
@@ -40,7 +41,7 @@ object General {
             ShowCommandUsage = getBoolean("General.Show-Command-Usage", true)
             HideEnchants = getBoolean("General.Hide-Enchants", true)
             AmericanMode = getBoolean("General.American-Mode", false)
-            CardMaterial = Material.getMaterial(getString("General.Card-Material") ?: "PAPER") ?: Material.PAPER
+            CardMaterial = Material.getMaterial(getString("General.Card-Material") ?: "FILLED_MAP") ?: Material.FILLED_MAP
             CardPrefix = getString("General.Card-Prefix") ?: "ERROR"
             BoosterPackMaterial = Material.getMaterial(getString("General.BoosterPack-Material") ?: "BOOK")
                     ?: Material.BOOK
@@ -62,6 +63,7 @@ object General {
             PlayerDropsCardRarity = getInt("General.Player-Drops-Card-Rarity", 100)
             InfoLineLength = getInt("General.Info-Line-Length", 25)
             PersistenceInterval = getInt("General.Persistence-Interval", 5)
+            MainWorldName = getString("General.MainWorldName", "world") ?: "world"
         }
     }
 

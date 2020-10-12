@@ -1,5 +1,6 @@
 package it.forgottenworld.tradingcards.model
 
+import it.forgottenworld.tradingcards.TradingCards
 import it.forgottenworld.tradingcards.config.Config
 import it.forgottenworld.tradingcards.data.Chances
 import it.forgottenworld.tradingcards.data.General
@@ -7,9 +8,14 @@ import it.forgottenworld.tradingcards.data.Messages
 import it.forgottenworld.tradingcards.data.Rarities
 import it.forgottenworld.tradingcards.util.capitalizeFully
 import it.forgottenworld.tradingcards.util.tC
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
+import java.awt.image.BufferedImage
+import java.io.File
+import java.io.IOException
 import java.util.*
+import javax.imageio.ImageIO
 import kotlin.random.Random
 
 class Card(
@@ -20,10 +26,29 @@ class Card(
         val about: String,
         val type: String,
         val info: String,
-        val price: Double) {
+        val price: Double,
+        val imageName: String,
+        var mapViewId: Int
+    ) {
 
+    var image: BufferedImage
     val isShiny
         get() = hasShinyVersion && Random.nextInt(100) + 1 <= Chances.ShinyVersionChance
+
+    init {
+        TradingCards.instance.run {
+            image = try {
+                ImageIO.read(File(this.dataFolder, "images/" + imageName))
+            } catch (e: IOException) {
+                ImageIO.read(File(this.dataFolder, "images/default.png"))
+            }
+        }
+        if(mapViewId == -1){
+            mapViewId = Bukkit.getWorld(General.MainWorldName)?.let { Bukkit.createMap(it).id }!!
+            Config.CARDS.set("Cards.${rarity.name}.$name.mapId",mapViewId)
+            Config.schedulePersistence()
+        }
+    }
 
     companion object {
 
@@ -82,7 +107,9 @@ class Card(
                                 "None",
                                 type,
                                 info,
-                                0.0
+                                0.0,
+                                "",
+                                -1
                         )
             }
 
@@ -117,6 +144,7 @@ class Card(
             Config.CARDS["Cards.${rarity.name}.$serializedCardName.Type"] = General.PlayerType
             Config.CARDS["Cards.${rarity.name}.$serializedCardName.Has-Shiny-Version"] = General.PlayerHasShinyVersion
             Config.CARDS["Cards.${rarity.name}.$serializedCardName.Info"] = info
+            Config.CARDS["Cards.${rarity.name}.$serializedCardName.Image"] = ""  //TODO prendere la foto dell'utente da qualche rest api
 
             rarity[serializedCardName] = Card(
                     player.name,
@@ -126,7 +154,9 @@ class Card(
                     "None",
                     General.PlayerType,
                     info,
-                    0.0
+                    0.0,
+                    "",
+                    -1
             )
         }
     }

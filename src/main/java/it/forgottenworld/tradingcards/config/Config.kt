@@ -149,9 +149,11 @@ class Config(private val configFile: File, private val plugin: JavaPlugin) {
         fun schedulePersistence() {
             val interval = General.PersistenceInterval * 20 * 60L
             bukkitTaskTimer(interval, interval) {
+                Bukkit.getLogger().log(Level.INFO, "Saving configs...")
                 saveDecksConfig()
                 savePluginConfig()
                 saveCardsConfig()
+                Bukkit.getLogger().log(Level.INFO, "Configs saved.")
             }
         }
     }
