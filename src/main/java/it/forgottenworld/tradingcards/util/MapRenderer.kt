@@ -8,7 +8,12 @@ import java.awt.image.BufferedImage
 
 class MapRenderer(val image: BufferedImage, contextual: Boolean) : MapRenderer(contextual) {
 
+    var alreadyRendered: Boolean = false
+
     override fun render(mapView: MapView, mapCanvas: MapCanvas, player: Player) {
-        mapCanvas.drawImage(0,0,image)
+        if(!alreadyRendered){
+            mapCanvas.drawImage(0, 0, image)
+            alreadyRendered = true
+        }
     }
 }

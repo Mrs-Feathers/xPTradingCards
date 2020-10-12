@@ -15,7 +15,6 @@ import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.persistence.PersistentDataType
@@ -84,19 +83,15 @@ object CardManager {
     fun createRandomCardItemStack(rarity: Rarity) =
             createCardItemStack(rarity.values.random(), 1)
 
-    private fun setCardRenderer(itemStack: ItemStack, card: Card){
-        if(!card.image.equals("")){
-            System.out.println(TradingCards.instance.dataFolder.path.toString() + "/images/" + card.image)
-            val image = ImageIO.read(File(TradingCards.instance.dataFolder,"/images/" + card.image))
-            if(image != null){
-                val mapView = Bukkit.getWorld(General.MainWorldName)?.let { Bukkit.createMap(it) }
-                mapView?.addRenderer(MapRenderer(image,false))
-                val itemMeta = itemStack.itemMeta as MapMeta
-                if (mapView != null) {
-                    itemMeta.mapView = mapView
-                }
-                itemStack.setItemMeta(itemMeta as ItemMeta)
-            }
+    private fun setCardRenderer(itemStack: ItemStack, card: Card) {
+        val mapView = Bukkit.getWorld(General.MainWorldName)?.let { Bukkit.getMap(card.mapViewId) }
+        mapView?.addRenderer(MapRenderer(card.image, false))
+        val itemMeta = itemStack.itemMeta as MapMeta
+        itemMeta.persistentDataContainer.set(NamespacedKey(TradingCards.instance,"name"), PersistentDataType.STRING,card.name)
+        itemMeta.persistentDataContainer.set(NamespacedKey(TradingCards.instance,"rarity"), PersistentDataType.STRING,card.rarity.name)
+        if (mapView != null) {
+            itemMeta.mapView = mapView
         }
+        itemStack.setItemMeta(itemMeta as ItemMeta)
     }
 }
